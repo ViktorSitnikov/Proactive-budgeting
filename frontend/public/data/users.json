@@ -1,0 +1,28 @@
+[
+  {
+    "id": "user-1",
+    "email": "citizen@example.com",
+    "password": "password123",
+    "role": "initiator",
+    "name": "Анна Волкова",
+    "avatar": "/placeholder.svg?height=48&width=48"
+  },
+  {
+    "id": "npo-1",
+    "email": "npo@example.com",
+    "password": "password123",
+    "role": "npo",
+    "name": "Фонд городской радости",
+    "organization": "Фонд городской радости",
+    "avatar": "/placeholder.svg?height=48&width=48"
+  },
+  {
+    "id": "admin-1",
+    "email": "admin@example.com",
+    "password": "password123",
+    "role": "admin",
+    "name": "Системный Администратор",
+    "avatar": "/placeholder.svg?height=48&width=48"
+  }
+]
+

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "npo-1",
+    "name": "Фонд городской радости",
+    "expertise": ["Общественные пространства", "Развитие сообществ"],
+    "rating": 5,
+    "avatar": "/placeholder.svg?height=48&width=48",
+    "activeProjects": 3,
+    "pendingRequests": 5,
+    "status": "approved",
+    "registrationDate": "2023-01-10"
+  },
+  {
+    "id": "npo-2",
+    "name": "Эко-Наблюдатели",
+    "expertise": ["Зеленая инфраструктура", "Устойчивое развитие"],
+    "rating": 4,
+    "avatar": "/placeholder.svg?height=48&width=48",
+    "activeProjects": 2,
+    "pendingRequests": 8,
+    "status": "approved",
+    "registrationDate": "2023-03-15"
+  },
+  {
+    "id": "npo-3",
+    "name": "Альянс Безопасный Город",
+    "expertise": ["Безопасность", "Освещение", "Инфраструктура"],
+    "rating": 5,
+    "avatar": "/placeholder.svg?height=48&width=48",
+    "activeProjects": 4,
+    "pendingRequests": 3,
+    "status": "approved",
+    "registrationDate": "2023-06-20"
+  },
+  {
+    "id": "npo-4",
+    "name": "Культурный Код",
+    "expertise": ["Реставрация", "Искусство", "Музеи"],
+    "rating": 0,
+    "avatar": "/placeholder.svg?height=48&width=48",
+    "activeProjects": 0,
+    "pendingRequests": 0,
+    "status": "pending",
+    "description": "Мы молодая организация, стремящаяся сохранить архитектурное наследие города через современные арт-интервенции.",
+    "registrationDate": "2024-03-01"
+  }
+]

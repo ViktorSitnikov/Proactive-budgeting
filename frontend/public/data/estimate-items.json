@@ -1,0 +1,8 @@
+[
+  { "id": "est-1", "resource": "Стальная скамейка", "category": "Мебель", "basePrice": 15000, "quantity": 4 },
+  { "id": "est-2", "resource": "Резиновое покрытие", "category": "Безопасность", "basePrice": 2500, "quantity": 40 },
+  { "id": "est-3", "resource": "LED освещение", "category": "Инфраструктура", "basePrice": 8500, "quantity": 6 },
+  { "id": "est-4", "resource": "Краска и материалы", "category": "Отделка", "basePrice": 3200, "quantity": 10 },
+  { "id": "est-5", "resource": "Качели", "category": "Оборудование", "basePrice": 22000, "quantity": 2 }
+]
+
