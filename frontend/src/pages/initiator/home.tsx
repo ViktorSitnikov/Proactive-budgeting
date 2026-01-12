@@ -53,6 +53,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
     p.status === ProjectStatuses.active || 
     p.status === ProjectStatuses.ngo_partnered ||
     p.status === ProjectStatuses.success
+  ).map(p => ({...p, status: p.status === ProjectStatuses.ngo_partnered ? ProjectStatuses.active : p.status})
   ), [projects]);
 
   const handleCreateNew = useCallback(() => {
@@ -123,7 +124,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-emerald-50 text-foreground">
       {/* Header */}
       <header className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mx-auto px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center justify-between w-full sm:w-auto">
             <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-slate-900">
               Городская<span className="text-blue-600">Инициатива</span>
@@ -266,7 +267,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={viewMode === 'map' ? { opacity: 1, scale: 1 } : {}}
               transition={{ duration: 0.4 }}
-              className="relative h-[calc(100vh-250px)] min-h-[500px] w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white group"
+              className="relative h-[calc(100vh-150px)] min-h-[100px] w-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white group"
               onMouseEnter={() => setIsMapHovered(true)}
               onMouseLeave={() => setIsMapHovered(false)}
             >

@@ -36,7 +36,9 @@ export function AllProjectsPage({ user, onBack, onLogout }: AllProjectsPageProps
           p.status === ProjectStatuses.ngo_partnered ||
           p.status === ProjectStatuses.success ||
           p.initiatorId === user.id // Но автор видит свои проекты в любом статусе
-        )
+        ).map(p => ({
+          ...p, status: (p.status === ProjectStatuses.ngo_partnered ? ProjectStatuses.active : p.status)
+        }))
         setProjects(visibleProjects)
       } catch (err) {
         console.error("Failed to load projects:", err)

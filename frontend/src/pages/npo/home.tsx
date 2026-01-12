@@ -41,7 +41,12 @@ export function NPOHome({ user, onLogout }: NPOHomeProps) {
   const stats = {
     active: projects.filter(p => p.npoId === user.id && p.status !== ProjectStatuses.success).length,
     completed: projects.filter(p => p.npoId === user.id && p.status === ProjectStatuses.success).length,
-    requested: projects.filter(p => (p.status === ProjectStatuses.active && !p.npoId) || p.ngoPartnerRequests?.some(r => r.npoId === user.id)).length,
+    requested: projects.filter(p => 
+      !p.npoId && (
+        p.status === ProjectStatuses.active || 
+        p.ngoPartnerRequests?.some(r => r.npoId === user.id)
+      )
+    ).length,
     totalBudget: projects.filter(p => p.npoId === user.id).reduce((sum, p) => sum + p.budget, 0)
   }
 

@@ -671,7 +671,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                             <p className="text-xs text-blue-600">Автор идеи</p>
                           </div>
                         </div>
-                        {project.participants?.map((name, i) => (
+                        {project.participants?.filter(p => p !== initiatorName).map((name, i) => (
                           <div key={i} className="flex items-center gap-3 p-3 border-b last:border-0">
                             <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 font-bold">
                               {name.split(' ').map(n => n[0]).join('')}

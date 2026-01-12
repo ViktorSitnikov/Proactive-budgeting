@@ -31,10 +31,12 @@ export function RequestedProjectsPage({ user, onBack, onLogout }: RequestedProje
         setIsLoading(true)
         const data = await projectsApi.getProjects()
         // Фильтруем проекты, которые либо активны (ищут партнера), 
-        // либо уже запросили помощь именно у этой НКО
+        // либо уже запросили помощь именно у этой НКО, НО при этом у них еще нет партнера
         const requested = data.filter(p => 
-          (p.status === ProjectStatuses.active && !p.npoId) || 
-          p.ngoPartnerRequests?.some(req => req.npoId === user.id)
+          !p.npoId && (
+            p.status === ProjectStatuses.active || 
+            p.ngoPartnerRequests?.some(req => req.npoId === user.id)
+          )
         )
         setProjects(requested)
       } catch (err) {

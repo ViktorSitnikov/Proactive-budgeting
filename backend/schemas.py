@@ -28,6 +28,16 @@ class ImageAnalysis(BaseModel):
     quality_score: float
     detected_objects: List[str]
 
+class Resource(BaseModel):
+    id: str
+    name: Optional[str] = Field(default=None)
+    resource: Optional[str] = Field(default=None)
+    category: Optional[str] = Field(default="Прочее")
+    basePrice: Optional[float] = Field(default=0.0)
+    quantity: float = Field(default=0.0)
+    unit: Optional[str] = Field(default="шт.")
+    estimatedCost: Optional[float] = Field(default=0.0)
+
 class Project(BaseModel):
     id: str
     title: str
@@ -43,7 +53,7 @@ class Project(BaseModel):
     participants: Optional[List[str]] = []
     pendingJoinRequests: Optional[List[str]] = []
     ngoPartnerRequests: Optional[List[NGO_PartnerRequest]] = []
-    resources: Optional[List[Dict[str, Any]]] = []
+    resources: Optional[List[Resource]] = []
     type: Optional[str] = None
     
     # Новые поля по ТЗ:
@@ -57,13 +67,6 @@ class Project(BaseModel):
 
 class ProjectStatusUpdate(BaseModel):
     status: ProjectStatus
-
-class Resource(BaseModel):
-    id: str
-    resource: str
-    category: str
-    basePrice: float
-    quantity: int
 
 class ProjectEstimateUpdate(BaseModel):
     resources: List[Resource]
@@ -92,6 +95,10 @@ class Draft(BaseModel):
     step: int
     resources: List[Resource] = []
     type: Optional[str] = None
+    photos: Optional[List[str]] = []
+
+    class Config:
+        from_attributes = True
 
 class NPOStatus(str, Enum):
     pending = "pending"
@@ -109,6 +116,9 @@ class NPO(BaseModel):
     status: Optional[NPOStatus] = None
     description: Optional[str] = None
     registrationDate: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class NPOStatusUpdate(BaseModel):
     status: NPOStatus
@@ -128,6 +138,9 @@ class User(BaseModel):
     phone: Optional[str] = None
     address: Optional[str] = None
     bio: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None

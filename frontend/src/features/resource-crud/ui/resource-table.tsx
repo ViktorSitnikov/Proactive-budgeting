@@ -4,7 +4,25 @@ import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Plus, Pencil, Trash2, Check, X } from "lucide-react"
+
+const UNITS = [
+  "шт.",
+  "кв.м.",
+  "м.",
+  "кг.",
+  "л.",
+  "компл.",
+  "час",
+  "усл. ед."
+]
 
 interface Resource {
   id: string
@@ -94,6 +112,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
               <tr className="border-b bg-slate-50">
                 <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Ресурс</th>
                 <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Кол-во</th>
+                <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Ед.</th>
                 <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Цена</th>
                 <th className="text-right p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Действия</th>
               </tr>
@@ -115,22 +134,36 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                         />
                       </td>
                       <td className="p-2">
-                          <div className="flex items-center gap-1">
                         <Input
                           type="number"
                           value={editForm.quantity}
                           onChange={(e) => setEditForm({ ...editForm, quantity: Number(e.target.value) })}
-                              className="h-9 w-16"
+                          className="h-9 w-20"
                         />
-                            <span className="text-xs text-slate-400">{editForm.unit || 'шт.'}</span>
-                          </div>
+                      </td>
+                      <td className="p-2">
+                        <Select
+                          value={editForm.unit || "шт."}
+                          onValueChange={(value) => setEditForm({ ...editForm, unit: value })}
+                        >
+                          <SelectTrigger className="h-9 w-24">
+                            <SelectValue placeholder="Ед." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {UNITS.map((unit) => (
+                              <SelectItem key={unit} value={unit}>
+                                {unit}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </td>
                       <td className="p-2">
                         <Input
                           type="number"
-                            value={getResourcePrice(editForm)}
-                            onChange={(e) => setEditForm({ ...editForm, basePrice: Number(e.target.value), estimatedCost: Number(e.target.value) })}
-                            className="h-9 w-24"
+                          value={getResourcePrice(editForm)}
+                          onChange={(e) => setEditForm({ ...editForm, basePrice: Number(e.target.value), estimatedCost: Number(e.target.value) })}
+                          className="h-9 w-24"
                         />
                       </td>
                         <td className="p-2 text-right">
@@ -148,10 +181,12 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                     <>
                         <td className="p-3">
                           <p className="font-bold text-slate-900">{name}</p>
-                          <p className="text-[10px] text-slate-400 uppercase font-medium">{resource.unit || 'шт.'}</p>
                         </td>
                         <td className="p-3 text-slate-600 font-medium">
                           {resource.quantity}
+                        </td>
+                        <td className="p-3 text-slate-400 font-medium uppercase text-[10px]">
+                          {resource.unit || 'шт.'}
                         </td>
                         <td className="p-3 font-bold text-slate-900">
                           {(price || 0).toLocaleString()} ₽
@@ -188,8 +223,25 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                       placeholder="0"
                       value={newResource.quantity}
                       onChange={(e) => setNewResource({ ...newResource, quantity: Number(e.target.value) })}
-                      className="h-9 w-16"
+                      className="h-9 w-20"
                     />
+                  </td>
+                  <td className="p-2">
+                    <Select
+                      value={newResource.unit || "шт."}
+                      onValueChange={(value) => setNewResource({ ...newResource, unit: value })}
+                    >
+                      <SelectTrigger className="h-9 w-24">
+                        <SelectValue placeholder="Ед." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {UNITS.map((unit) => (
+                          <SelectItem key={unit} value={unit}>
+                            {unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </td>
                   <td className="p-2">
                     <Input
