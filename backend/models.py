@@ -1,5 +1,6 @@
-from sqlalchemy import Column, String, Float, Integer, Enum, JSON, ForeignKey
+from sqlalchemy import Column, String, Float, Integer, Enum, JSON, ForeignKey, DateTime
 from sqlalchemy.ext.declarative import declarative_base
+from geoalchemy2 import Geometry
 import enum
 
 Base = declarative_base()
@@ -40,6 +41,7 @@ class DBUser(Base):
     bio = Column(String, nullable=True)
 
 class DBProject(Base):
+    """Проект и черновик заявки — одна таблица (status == DRAFT для черновика)."""
     __tablename__ = "projects"
     id = Column(String, primary_key=True, index=True)
     title = Column(String)
@@ -49,7 +51,7 @@ class DBProject(Base):
     location = Column(String)
     coordinates = Column(JSON) # {lat: float, lng: float}
     status = Column(String)
-    initiatorId = Column(String)
+    initiatorId = Column(String, ForeignKey("users.id"), nullable=False, index=True)
     npoId = Column(String, nullable=True)
     createdAt = Column(String)
     participants = Column(JSON, default=[])
@@ -57,24 +59,23 @@ class DBProject(Base):
     ngoPartnerRequests = Column(JSON, default=[])
     resources = Column(JSON, default=[])
     type = Column(String, nullable=True) # Тип проекта (Благоустройство, Дороги и т.д.)
-    
+
     # Новые поля по ТЗ:
     ai_score = Column(Float, default=0)
     rejection_reason = Column(String, nullable=True)
     image_analysis = Column(JSON, nullable=True) # { quality_score: float, detected_objects: string[] }
     search_radius = Column(Integer, default=500)
+    geom = Column(Geometry(geometry_type="POINT", srid=4326), nullable=True)
+    geom_polygon = Column(Geometry(geometry_type="POLYGON", srid=4326), nullable=True)
 
-class DBDraft(Base):
-    __tablename__ = "drafts"
-    id = Column(String, primary_key=True, index=True)
-    initiatorId = Column(String, index=True)
-    title = Column(String)
-    description = Column(String)
-    lastModified = Column(String)
-    status = Column(String, default="DRAFT")
-    step = Column(Integer)
-    resources = Column(JSON, default=[])
-    type = Column(String, nullable=True)
+    # Черновик / мастер заявки
+    draft_step = Column(Integer, nullable=True)
+    photos = Column(JSON, nullable=True)  # legacy field, используем project_photos
+    project_photos = Column(JSON, nullable=True)
+    analysis_photos = Column(JSON, nullable=True)
+    polygon = Column(JSON, nullable=True)  # кольцо [lng,lat][] до публикации; дублирует смысл geom_polygon после
+    created_at = Column(DateTime(timezone=True), nullable=True)
+    updated_at = Column(DateTime(timezone=True), nullable=True)
 
 class DBNPO(Base):
     __tablename__ = "npos"
@@ -144,4 +145,3 @@ class DBGlobalSettings(Base):
     minBudget = Column(Float)
     defaultSubsidyRate = Column(Float)
     currentYear = Column(Integer)
-

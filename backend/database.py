@@ -6,13 +6,18 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 import os
+from dotenv import load_dotenv
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-db_path = os.path.join(BASE_DIR, 'app.db').replace('\\', '/')
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{db_path}"
+
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"), override=True, encoding="utf-8")
+
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+if not SQLALCHEMY_DATABASE_URL:
+    raise ValueError("DATABASE_URL не задан")
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, pool_pre_ping=True
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -52,6 +57,14 @@ def init_db():
             name="Системный Администратор",
             avatar="/placeholder.svg?height=48&width=48",
         ),
+        DBUser(
+            id="user-2",
+            email="citizen2@example.com",
+            password=pwd_context.hash("password123"),
+            role="initiator",
+            name="Иван Петров",
+            avatar="/placeholder.svg?height=48&width=48",
+        ),
     ]
     db.add_all(mock_users)
 
@@ -65,6 +78,12 @@ def init_db():
             image="https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?q=80&w=800&auto=format&fit=crop",
             location="Октябрьский район, ул. Луначарского",
             coordinates={"lat": 56.8380, "lng": 60.6030},
+            polygon=[
+                [60.6025, 56.8385],
+                [60.6035, 56.8385],
+                [60.6035, 56.8375],
+                [60.6025, 56.8375]
+            ],
             status="ACTIVE",
             initiatorId="user-1",
             npoId="npo-1",
@@ -83,6 +102,12 @@ def init_db():
             image="https://images.unsplash.com/photo-1585829365291-1762f55e972e?q=80&w=800&auto=format&fit=crop",
             location="Ленинский район, ул. Вайнера",
             coordinates={"lat": 56.8395, "lng": 60.6060},
+            polygon=[
+                [60.6055, 56.8400],
+                [60.6065, 56.8400],
+                [60.6065, 56.8390],
+                [60.6055, 56.8390]
+            ],
             status="SUCCESS",
             initiatorId="user-2",
             npoId="npo-2",

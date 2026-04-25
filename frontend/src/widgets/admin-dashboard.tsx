@@ -14,7 +14,7 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
       <Sidebar role="admin" />
       <div className="ml-64 min-h-screen bg-background">
         <div className="max-w-7xl mx-auto p-8">
-          <AdminOverview />
+          <AdminOverview user={user} />
         </div>
       </div>
     </>

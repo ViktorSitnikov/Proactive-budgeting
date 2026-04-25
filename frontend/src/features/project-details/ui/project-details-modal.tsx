@@ -205,7 +205,8 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                       <p className="text-2xl font-black text-slate-900">85%</p>
                       <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Успешность KPI</p>
                     </CardContent>
-                  </div>
+                  </Card>
+                </div>
                 </TabsContent>
               </Tabs>
             </>

@@ -59,7 +59,7 @@ export function NPOOverview({ user }: NPOOverviewProps) {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+        <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
         <p className="font-medium">Загрузка данных панели...</p>
       </div>
     )
@@ -99,23 +99,23 @@ export function NPOOverview({ user }: NPOOverviewProps) {
           </CardContent>
         </Card>
 
-        <Card className="bg-emerald-50 border-emerald-200">
+        <Card className="bg-primary/10 border-primary/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base text-emerald-700">
+            <CardTitle className="flex items-center gap-2 text-base text-primary">
               <TrendingUp className="w-4 h-4" />
               Общий вклад
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold text-emerald-600">12</p>
-            <p className="text-xs text-emerald-700 mt-1">Завершенных проектов</p>
+            <p className="text-4xl font-bold text-primary">12</p>
+            <p className="text-xs text-primary mt-1">Завершенных проектов</p>
           </CardContent>
         </Card>
       </div>
 
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="w-5 h-5 text-blue-600" />
+          <Sparkles className="w-5 h-5 text-primary" />
           <h3 className="text-xl font-semibold">AI-Curated Opportunities</h3>
         </div>
         <div className="grid md:grid-cols-2 gap-4">

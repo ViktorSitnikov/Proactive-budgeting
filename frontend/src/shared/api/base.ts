@@ -1,4 +1,4 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
+export const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 export const API_HOST = BASE_URL.replace('/api', '');
 
 export function getImageUrl(url: string | undefined): string {

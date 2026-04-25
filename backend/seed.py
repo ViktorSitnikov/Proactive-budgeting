@@ -1,10 +1,11 @@
 from database import SessionLocal, engine, init_db
-from models import Base, DBUser, DBProject, DBNPO, DBResource, DBGlobalSettings, DBDraft, DBProjectDetails, DBTemplate, DBKnowledgeBaseEntry
+from models import Base, DBUser, DBProject, DBNPO, DBResource, DBGlobalSettings, DBProjectDetails, DBTemplate, DBKnowledgeBaseEntry
 import uuid
 import random
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
+from main import _build_point_wkt, _build_polygon_wkt
 
 # Импортируем манифест загруженных ассетов, если он есть
 try:
@@ -161,6 +162,16 @@ def seed_data():
             })
         
         total_budget = sum(r["basePrice"] * r["quantity"] for r in proj_resources)
+        
+        lat = 56.8 + random.uniform(-0.05, 0.05)
+        lng = 60.6 + random.uniform(-0.05, 0.05)
+        coords = {"lat": lat, "lng": lng}
+        poly = [
+            [lng - 0.001, lat - 0.001],
+            [lng + 0.001, lat - 0.001],
+            [lng + 0.001, lat + 0.001],
+            [lng - 0.001, lat + 0.001]
+        ]
 
         projects.append(DBProject(
             id=pid,
@@ -169,7 +180,10 @@ def seed_data():
             budget=total_budget,
             image=get_random_asset("проект", f"https://images.unsplash.com/photo-{random.randint(1500000000000, 1600000000000)}?q=80&w=800"),
             location=f"{random.choice(districts)}, ул. {random.choice(last_names)}, {random.randint(1, 150)}",
-            coordinates={"lat": 56.8 + random.uniform(-0.05, 0.05), "lng": 60.6 + random.uniform(-0.05, 0.05)},
+            coordinates=coords,
+            polygon=poly,
+            geom=_build_point_wkt(coords),
+            geom_polygon=_build_polygon_wkt(poly),
             status=status,
             type=random.choice(project_types),
             initiatorId=initiator.id,
@@ -198,21 +212,48 @@ def seed_data():
         ))
     db.add_all(details)
 
-    # --- 6. Черновики (~30) ---
+    # --- 6. Черновики (~30) — те же строки, что и проекты, status=DRAFT ---
     drafts = []
+    default_img = "https://images.unsplash.com/photo-1585829365291-1762f55e972e?q=80&w=800&auto=format&fit=crop"
     for i in range(1, 31):
         initiator = random.choice(users[:50])
-        drafts.append(DBDraft(
-            id=f"draft-{i}",
-            initiatorId=initiator.id,
-            title=f"Идея №{i}: {random.choice(project_titles)}",
-            description="Текст черновика, который находится в процессе доработки...",
-            lastModified=(datetime.now() - timedelta(hours=random.randint(1, 100))).isoformat(),
-            status="DRAFT",
-            step=random.randint(1, 4),
-            resources=[],
-            type=random.choice(project_types)
-        ))
+        ts = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 100))
+        
+        lat = 56.8389 + random.uniform(-0.02, 0.02)
+        lng = 60.6057 + random.uniform(-0.02, 0.02)
+        coords = {"lat": lat, "lng": lng}
+        poly = [
+            [lng - 0.001, lat - 0.001],
+            [lng + 0.001, lat - 0.001],
+            [lng + 0.001, lat + 0.001],
+            [lng - 0.001, lat + 0.001]
+        ]
+        
+        drafts.append(
+            DBProject(
+                id=f"draft-{i}",
+                initiatorId=initiator.id,
+                title=f"Идея №{i}: {random.choice(project_titles)}",
+                description="Текст черновика, который находится в процессе доработки...",
+                budget=0,
+                image=default_img,
+                location="Не указано",
+                coordinates=coords,
+                polygon=poly,
+                geom=_build_point_wkt(coords),
+                geom_polygon=_build_polygon_wkt(poly),
+                status="DRAFT",
+                createdAt=ts.strftime("%Y-%m-%d"),
+                participants=[],
+                pendingJoinRequests=[],
+                ngoPartnerRequests=[],
+                resources=[],
+                type=random.choice(project_types),
+                draft_step=random.randint(1, 4),
+                created_at=ts,
+                updated_at=ts,
+            )
+        )
     db.add_all(drafts)
 
     # --- 7. Шаблоны и База Знаний ---

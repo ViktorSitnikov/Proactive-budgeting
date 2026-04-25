@@ -10,6 +10,14 @@ export interface Draft {
   step: number;
   resources?: any[];
   type?: string;
+  budget?: number;
+  photos?: string[];
+  projectPhotos?: string[];
+  analysisPhotos?: string[];
+  /** Текстовый адрес (как у проекта) */
+  location?: string;
+  coordinates?: { lat: number; lng: number };
+  polygon?: number[][];
 }
 
 export const projectsApi = {
@@ -31,10 +39,14 @@ export const projectsApi = {
   },
 
   // Проекты
-  getProjects: (params?: { initiatorId?: string, npoId?: string }) => {
+  getProjects: (params?: { initiatorId?: string, npoId?: string, lat?: number, lng?: number, radius?: number }) => {
     const searchParams = new URLSearchParams();
     if (params?.initiatorId) searchParams.append('initiator_id', params.initiatorId);
     if (params?.npoId) searchParams.append('npo_id', params.npoId);
+    if (params?.lat !== undefined) searchParams.append('lat', params.lat.toString());
+    if (params?.lng !== undefined) searchParams.append('lng', params.lng.toString());
+    if (params?.radius !== undefined) searchParams.append('radius', params.radius.toString());
+    
     const queryString = searchParams.toString();
     return fetchApi<Project[]>(`/projects${queryString ? `?${queryString}` : ''}`);
   },
@@ -44,6 +56,11 @@ export const projectsApi = {
   createProject: (data: any) => fetchApi<Project>('/projects', {
     method: 'POST',
     body: JSON.stringify(data),
+  }),
+
+  findPolygonIntersections: (coordinates: number[][], draftId?: string) => fetchApi<Project[]>('/projects/intersections', {
+    method: 'POST',
+    body: JSON.stringify({ coordinates, draftId }),
   }),
 
   getProjectDetails: (id: string) => fetchApi<ProjectDetails>(`/projects/${id}/details`),

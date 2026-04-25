@@ -37,6 +37,15 @@ import { Project, ProjectStatuses, type User } from '@/src/shared/lib/mock-data'
 import { ResourceTable } from '@/src/features/resource-crud/ui/resource-table';
 import { projectsApi } from '@/src/shared/api/projects';
 import { getImageUrl } from '@/src/shared/api/base';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { useQueryClient } from '@tanstack/react-query';
+
+import { formatBeautifulDate } from "@/src/shared/lib/format-date"
 
 interface ProjectViewProps {
   project: Project;
@@ -46,6 +55,8 @@ interface ProjectViewProps {
   initialEditEstimate?: boolean;
 }
 
+import { NotificationListener } from "@/src/shared/ui/notification-listener"
+
 export const ProjectView: React.FC<ProjectViewProps> = ({ 
   project: initialProject, 
   onBack,
@@ -54,11 +65,23 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
   initialEditEstimate = false
 }) => {
   const [project, setProject] = useState(initialProject);
+
+  useEffect(() => {
+    setProject(initialProject);
+  }, [initialProject]);
   const [isPending, setIsPending] = useState(false);
   const [isEditingEstimate, setIsEditingEstimate] = useState(initialEditEstimate);
   const [resources, setResources] = useState<any[]>([]);
   const [initiator, setInitiator] = useState<any>(null);
   const [npo, setNpo] = useState<any>(null);
+  const [currentUserData, setCurrentUserData] = useState<any>(null);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (currentUserId) {
+      projectsApi.getUser(currentUserId).then(setCurrentUserData).catch(console.error);
+    }
+  }, [currentUserId]);
 
   useEffect(() => {
     const loadInitiator = async () => {
@@ -131,7 +154,8 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
   };
   
   const isInitiator = currentUserId === project.initiatorId;
-  const isParticipant = project.participants?.includes(currentUserId || '');
+  const isParticipant = currentUserData ? project.participants?.includes(currentUserData.name) : false;
+  const hasPendingRequest = currentUserData ? project.pendingJoinRequests?.includes(currentUserData.name) : false;
   const isSuccess = project.status === ProjectStatuses.success;
   const isNPOPartner = userRole === 'npo' && project.npoId === currentUserId;
 
@@ -160,6 +184,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
         participants: [...(prev.participants || []), name]
       }));
       toast.success(`Участник ${name} добавлен в проект`);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     } catch (err) {
       toast.error('Ошибка при обработке запроса');
     } finally {
@@ -176,6 +201,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
         pendingJoinRequests: prev.pendingJoinRequests?.filter(n => n !== name)
       }));
       toast.error(`Запрос от ${name} отклонен`);
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     } catch (err) {
       toast.error('Ошибка при обработке запроса');
     } finally {
@@ -192,8 +218,9 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
       // Имитируем обновление для UI
       setProject(prev => ({
         ...prev,
-        pendingJoinRequests: [...(prev.pendingJoinRequests || []), 'Вы (ожидание)']
+        pendingJoinRequests: [...(prev.pendingJoinRequests || []), currentUserData?.name || 'Вы (ожидание)']
       }));
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     } catch (err) {
       toast.error('Ошибка при отправке запроса');
     } finally {
@@ -219,7 +246,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({
 ДОКУМЕНТАЦИЯ ПРОЕКТА: ${project.title}
 ------------------------------------------
 Статус: ${project.status}
-Дата формирования: ${new Date().toLocaleDateString()}
+Дата формирования: ${formatBeautifulDate(new Date())}
 Автор: ${initiatorName}
 Локация: ${project.location}
 Бюджет: ${(project.budget || 0).toLocaleString()} ₽
@@ -249,9 +276,9 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
   const getStatusConfig = (status: ProjectStatuses) => {
     switch (status) {
       case ProjectStatuses.success:
-        return { label: 'Реализован', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: CheckCircle2 };
+        return { label: 'Реализован', color: 'bg-primary/20 text-primary border-primary/30', icon: CheckCircle2 };
       case ProjectStatuses.active:
-        return { label: 'В работе', color: 'bg-blue-100 text-blue-700 border-blue-200', icon: Clock };
+        return { label: 'В работе', color: 'bg-secondary text-secondary-foreground border-border', icon: Clock };
       default:
         return { label: 'На проверке', color: 'bg-orange-100 text-orange-700 border-orange-200', icon: Info };
     }
@@ -269,7 +296,8 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
             <ArrowLeft className="w-4 h-4" />
             Назад
           </Button>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            <NotificationListener />
             <Button variant="outline" size="sm" className="gap-2" onClick={handleShare}>
               <Share2 className="w-4 h-4" />
               Поделиться
@@ -328,19 +356,21 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                 key={`ngo-${idx}`}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-blue-50 border border-blue-100 p-4 rounded-2xl flex flex-col sm:items-center sm:flex-row justify-between gap-4"
+                className="bg-muted border border-border p-4 rounded-2xl flex flex-col sm:items-center sm:flex-row justify-between gap-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center font-bold text-blue-700 shrink-0">
+                  <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center font-bold text-primary shrink-0">
                     НКО
                   </div>
                   <div className="max-w-md">
                     <p className="text-sm font-bold text-slate-900">{req.npoName}</p>
-                    <p className="text-xs text-slate-600 line-clamp-1 italic">"{req.message}"</p>
+                    <p className="text-xs text-slate-600 line-clamp-1 italic">
+                      «{req.message}»
+                    </p>
                   </div>
                 </div>
                 <div className="flex gap-2 w-full sm:w-auto">
-                  <Button size="sm" className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 h-8 px-3 text-xs">Обсудить партнерство</Button>
+                  <Button size="sm" className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 h-8 px-3 text-xs">Обсудить партнерство</Button>
                 </div>
               </motion.div>
             ))}
@@ -373,18 +403,18 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                 
                 <div className="flex flex-wrap gap-2 md:gap-4 text-slate-500">
                   <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs md:text-sm font-medium">
-                    <Badge variant="secondary" className="bg-blue-600 text-white border-none">{project.type || 'Благоустройство'}</Badge>
+                    <Badge variant="secondary" className="bg-primary text-primary-foreground border-none">{project.type || 'Благоустройство'}</Badge>
                   </div>
                   <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs md:text-sm font-medium">
-                    <MapPin className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
+                    <MapPin className="w-3 h-3 md:w-4 md:h-4 text-primary" />
                     {project.location}
                   </div>
                   <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs md:text-sm font-medium">
-                    <Calendar className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
-                    {new Date(project.createdAt).toLocaleDateString('ru-RU')}
+                    <Calendar className="w-3 h-3 md:w-4 md:h-4 text-primary" />
+                    {formatBeautifulDate(project.createdAt)}
                   </div>
                   <div className="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full text-xs md:text-sm font-medium">
-                    <Users className="w-3 h-3 md:w-4 md:h-4 text-blue-500" />
+                    <Users className="w-3 h-3 md:w-4 md:h-4 text-primary" />
                     Участников: {project.participants?.length || 0}
                   </div>
                 </div>
@@ -407,7 +437,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
             <Card className="border-none shadow-lg bg-slate-50 overflow-hidden">
               <CardHeader className="bg-white border-b flex flex-row items-center justify-between p-4 md:p-6">
                 <CardTitle className="flex items-center gap-2 text-base md:text-lg">
-                  <Coins className="w-5 h-5 text-blue-600" />
+                  <Coins className="w-5 h-5 text-primary" />
                   Финансовый план
                 </CardTitle>
                 {isNPOPartner && !isSuccess && (
@@ -434,7 +464,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                     <ResourceTable resources={resources} onResourcesChange={handleResourcesChange} />
                     <div className="flex justify-end gap-3 pt-4 border-t">
                       <Button variant="ghost" size="sm" onClick={() => setIsEditingEstimate(false)}>Отмена</Button>
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={handleSaveEstimate} disabled={isPending}>
+                      <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={handleSaveEstimate} disabled={isPending}>
                         {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Check className="w-4 h-4 mr-2" />}
                         Сохранить
                       </Button>
@@ -449,7 +479,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                           {(totalBudget || 0).toLocaleString()} ₽
                         </p>
                       </div>
-                      <Badge variant="outline" className="px-3 py-1 md:px-4 md:py-2 border-blue-200 bg-blue-50 text-blue-700 font-bold text-[10px] md:text-xs w-fit">
+                      <Badge variant="outline" className="px-3 py-1 md:px-4 md:py-2 border-border bg-muted text-muted-foreground font-bold text-[10px] md:text-xs w-fit">
                         Инициативное бюджетирование
                       </Badge>
                     </div>
@@ -478,10 +508,10 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                             );
                           })}
                         </tbody>
-                        <tfoot className="bg-blue-50/50">
+                        <tfoot className="bg-muted/50">
                           <tr>
                             <td colSpan={2} className="px-4 md:px-8 py-4 md:py-6 text-slate-900 font-bold text-sm">Итоговая оценка</td>
-                            <td className="px-4 md:px-8 py-4 md:py-6 text-right font-black text-lg md:text-xl text-blue-600">{(totalBudget || 0).toLocaleString()} ₽</td>
+                            <td className="px-4 md:px-8 py-4 md:py-6 text-right font-black text-lg md:text-xl text-primary">{(totalBudget || 0).toLocaleString()} ₽</td>
                           </tr>
                         </tfoot>
                       </table>
@@ -498,7 +528,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
               <Card className="border-none shadow-xl bg-slate-900 text-white overflow-hidden">
                 <CardHeader className="bg-slate-800 border-b border-slate-700">
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <LayoutDashboard className="w-5 h-5 text-blue-400" />
+                    <LayoutDashboard className="w-5 h-5 text-primary" />
                     Управление проектом
                   </CardTitle>
                 </CardHeader>
@@ -510,7 +540,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                         <Button 
                           className="w-full bg-slate-800 hover:bg-slate-700 text-white border-slate-700 gap-2 h-11 shadow-lg"
                         >
-                          <TrendingUp className="w-4 h-4 text-blue-400" />
+                          <TrendingUp className="w-4 h-4 text-primary" />
                           Обновить статус
                         </Button>
                       </DialogTrigger>
@@ -527,8 +557,8 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                               onClick={() => handleUpdateStatus(ProjectStatuses.active)}
                               disabled={isPending || project.status === ProjectStatuses.active}
                             >
-                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                                <Clock className="w-4 h-4 text-blue-600" />
+                              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                <Clock className="w-4 h-4 text-primary" />
                               </div>
                               <div className="text-left">
                                 <p className="font-bold text-sm">В работе</p>
@@ -537,12 +567,12 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                             </Button>
                             <Button 
                               variant="outline" 
-                              className="justify-start gap-3 h-14 border-emerald-200 hover:bg-emerald-50"
+                              className="justify-start gap-3 h-14 border-border hover:bg-primary/10"
                               onClick={() => handleUpdateStatus(ProjectStatuses.success)}
                               disabled={isPending || project.status === ProjectStatuses.success}
                             >
-                              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                <CheckCircle2 className="w-4 h-4 text-primary" />
                               </div>
                               <div className="text-left">
                                 <p className="font-bold text-sm">Реализован</p>
@@ -558,7 +588,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                       className="w-full bg-slate-800 hover:bg-slate-700 text-white border-slate-700 gap-2 h-11 shadow-lg"
                       onClick={handleDownloadDocs}
                     >
-                      <Building2 className="w-4 h-4 text-blue-400" />
+                      <Building2 className="w-4 h-4 text-primary" />
                       Документы проекта
                     </Button>
                   </div>
@@ -566,31 +596,31 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
               </Card>
             )}
             {!shouldHideParticipation && (
-              <Card className="border-2 border-blue-100 shadow-xl overflow-hidden">
-                <CardHeader className="bg-blue-600 text-white">
+              <Card className="border-2 border-border shadow-xl overflow-hidden">
+                <CardHeader className="bg-primary text-primary-foreground">
                   <CardTitle className="text-lg">Участие в проекте</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <p className="text-sm text-slate-600">
-                    Вы можете стать частью команды реализации этого проекта и помочь городу.
-                  </p>
                   <div className="space-y-3 pt-2">
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-lg font-bold"
-                      disabled={isPending}
-                      onClick={handleJoinRequest}
-                    >
-                      {isPending ? 'Запрос отправлен' : 'Отправить запрос на вступление'}
-                    </Button>
-                  </div>
-                  <div className="pt-4 border-t border-slate-100">
-                    <div className="flex items-center justify-between text-xs font-medium">
-                      <span className="text-slate-500">Заполнено команды</span>
-                      <span className="text-blue-600">45%</span>
-                    </div>
-                    <div className="w-full bg-slate-100 h-2 rounded-full mt-2 overflow-hidden">
-                      <div className="bg-blue-500 h-full w-[45%] rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="w-full">
+                            <Button 
+                              className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+                              disabled={isPending || hasPendingRequest}
+                              onClick={handleJoinRequest}
+                            >
+                              {hasPendingRequest ? 'Запрос отправлен' : `Отправить запрос`}
+                            </Button>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="max-w-[300px] text-sm p-3">
+                          Вы можете отправить запрос на вступление в инициативную группу проекта. 
+                          Автору идеи придет уведомление о том, что вы хотите присоединиться, и ваши контактные данные.
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </CardContent>
               </Card>
@@ -603,7 +633,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
               <CardContent className="p-6">
                 {npo ? (
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center font-bold text-blue-600 overflow-hidden">
+                    <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center font-bold text-primary overflow-hidden">
                       {npo.avatar ? <img src={npo.avatar} alt={npo.name} className="w-full h-full object-cover" /> : npo.name.charAt(0)}
                     </div>
                     <div>
@@ -630,19 +660,19 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                   <div className="space-y-3">
                     {/* Автор всегда в топе */}
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-[10px] text-white font-bold">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-[10px] text-white font-bold">
                         {initiatorAvatar}
                       </div>
                       <div>
                         <p className="text-sm font-bold text-slate-900 leading-none">{initiatorName}</p>
-                        <p className="text-[10px] text-blue-600 font-bold uppercase mt-1 tracking-tighter">Автор идеи</p>
+                        <p className="text-[10px] text-primary font-bold uppercase mt-1 tracking-tighter">Автор идеи</p>
                       </div>
                     </div>
                     
                     {/* Другие участники */}
                     {project.participants?.filter(p => p !== initiatorName).map((participant, idx) => (
                       <div key={idx} className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center text-[10px] text-emerald-700 font-bold">
+                        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center text-[10px] text-primary font-bold">
                           {participant.split(' ').map(n => n[0]).join('')}
                         </div>
                         <div>
@@ -664,11 +694,11 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
                         <DialogTitle>Участники проекта</DialogTitle>
                       </DialogHeader>
                       <div className="space-y-4 pt-4">
-                        <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-xl">
-                          <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">{initiatorAvatar}</div>
+                        <div className="flex items-center gap-3 p-3 bg-primary/10 rounded-xl">
+                          <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white font-bold">{initiatorAvatar}</div>
                           <div>
                             <p className="font-bold">{initiatorName}</p>
-                            <p className="text-xs text-blue-600">Автор идеи</p>
+                            <p className="text-xs text-primary">Автор идеи</p>
                           </div>
                         </div>
                         {project.participants?.filter(p => p !== initiatorName).map((name, i) => (

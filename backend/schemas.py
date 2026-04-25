@@ -28,6 +28,11 @@ class ImageAnalysis(BaseModel):
     quality_score: float
     detected_objects: List[str]
 
+class Supplier(BaseModel):
+    price: float
+    name: str
+    url: str
+
 class Resource(BaseModel):
     id: str
     name: Optional[str] = Field(default=None)
@@ -37,6 +42,7 @@ class Resource(BaseModel):
     quantity: float = Field(default=0.0)
     unit: Optional[str] = Field(default="шт.")
     estimatedCost: Optional[float] = Field(default=0.0)
+    suppliers: Optional[List[Supplier]] = []
 
 class Project(BaseModel):
     id: str
@@ -61,6 +67,9 @@ class Project(BaseModel):
     rejection_reason: Optional[str] = None
     image_analysis: Optional[ImageAnalysis] = None
     search_radius: int = 500
+    polygon: Optional[List[List[float]]] = None
+    projectPhotos: Optional[List[str]] = []
+    analysisPhotos: Optional[List[str]] = []
 
     class Config:
         from_attributes = True
@@ -70,6 +79,11 @@ class ProjectStatusUpdate(BaseModel):
 
 class ProjectEstimateUpdate(BaseModel):
     resources: List[Resource]
+
+
+class PolygonIntersectionRequest(BaseModel):
+    coordinates: List[List[float]]
+    draftId: Optional[str] = None
 
 class JoinAction(str, Enum):
     approve = "approve"
@@ -96,6 +110,11 @@ class Draft(BaseModel):
     resources: List[Resource] = []
     type: Optional[str] = None
     photos: Optional[List[str]] = []
+    projectPhotos: Optional[List[str]] = []
+    analysisPhotos: Optional[List[str]] = []
+    location: Optional[str] = None
+    coordinates: Optional[Dict[str, Any]] = None
+    polygon: Optional[List[List[float]]] = None
 
     class Config:
         from_attributes = True

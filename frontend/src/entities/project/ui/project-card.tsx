@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { MapPin } from "lucide-react"
-import type { Project } from "@/shared/lib/mock-data"
+import type { Project } from "@/src/shared/lib/mock-data"
 import { getImageUrl } from "@/src/shared/api/base"
 
 interface ProjectCardProps {

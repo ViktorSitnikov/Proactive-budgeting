@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { MapPin, Sparkles, ChevronRight } from "lucide-react"
-import type { Opportunity } from "@/shared/lib/mock-data"
+import type { Opportunity } from "@/src/shared/lib/mock-data"
 
 interface OpportunityCardProps {
   opportunity: Opportunity
@@ -39,7 +39,7 @@ export function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) 
           <p className="text-xs text-blue-600">{opportunity.matchReason}</p>
         </div>
         <div className="flex flex-wrap gap-1">
-          {opportunity.tags.map((tag) => (
+          {opportunity.tags.map((tag: string) => (
             <Badge key={tag} variant="secondary" className="text-xs">
               {tag}
             </Badge>

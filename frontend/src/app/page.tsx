@@ -1,39 +1,42 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { LoginForm } from "@/src/features/auth/ui/login-form"
 import { RegisterForm } from "@/src/features/auth/ui/register-form"
 import type { User } from "@/src/shared/lib/mock-data"
-import { InitiatorHome } from "@/src/pages/initiator/home"
-import { NPOHome } from "@/src/pages/npo/home"
-import { AdminHome } from "@/src/pages/admin/home"
+import { InitiatorHome } from "@/src/views/initiator/home"
+import { NPOHome } from "@/src/views/npo/home"
+import { AdminHome } from "@/src/views/admin/home"
 import { fetchApi } from "@/src/shared/api/base"
 
 export default function HomePage() {
-  const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const queryClient = useQueryClient()
   const [isRegistering, setIsRegistering] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
 
-  useEffect(() => {
-    const checkAuth = async () => {
+  const { data: currentUser, isLoading } = useQuery({
+    queryKey: ['authUser'],
+    queryFn: async () => {
       const token = localStorage.getItem("token")
-      if (token) {
-        try {
-          const user = await fetchApi<User>("/auth/me")
-          setCurrentUser(user)
-        } catch (err) {
-          console.error("Auth check failed", err)
-          localStorage.removeItem("token")
-        }
+      if (!token) return null
+      try {
+        return await fetchApi<User>("/auth/me")
+      } catch (err) {
+        console.error("Auth check failed", err)
+        localStorage.removeItem("token")
+        return null
       }
-      setIsLoading(false)
     }
-    checkAuth()
-  }, [])
+  })
+
+  const handleLoginOrRegister = (user: User) => {
+    queryClient.setQueryData(['authUser'], user)
+    setIsRegistering(false)
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("token")
-    setCurrentUser(null)
+    queryClient.setQueryData(['authUser'], null)
   }
 
   if (isLoading) {
@@ -48,17 +51,14 @@ export default function HomePage() {
     if (isRegistering) {
       return (
         <RegisterForm 
-          onRegister={(user) => {
-            setCurrentUser(user)
-            setIsRegistering(false)
-          }} 
+          onRegister={handleLoginOrRegister} 
           onBackToLogin={() => setIsRegistering(false)} 
         />
       )
     }
     return (
       <LoginForm 
-        onLogin={setCurrentUser} 
+        onLogin={handleLoginOrRegister} 
         onRegisterClick={() => setIsRegistering(true)} 
       />
     )

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -26,31 +27,36 @@ export function AdminOverview({ user }: AdminOverviewProps) {
   const [subsidyRate, setSubsidyRate] = useState(0)
   const [templates, setTemplates] = useState<Template[]>([])
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeBaseEntry[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [editingTemplate, setEditingTemplate] = useState<Template | null>(null)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true)
-        const [settings, tmpls, kb] = await Promise.all([
-          projectsApi.getGlobalSettings(),
-          projectsApi.getTemplates(),
-          projectsApi.getKnowledgeBase()
-        ])
-        setInflationRate(settings.inflationRate)
-        setMaxBudget(settings.maxBudget)
-        setSubsidyRate(settings.defaultSubsidyRate)
-        setTemplates(tmpls)
-        setKnowledgeBase(kb)
-      } catch (err) {
-        console.error("Failed to load admin data:", err)
-      } finally {
-        setIsLoading(false)
-      }
+  const { data: adminData, isLoading } = useQuery({
+    queryKey: ['adminOverviewData'],
+    queryFn: async () => {
+      const [settings, tmpls, kb] = await Promise.all([
+        projectsApi.getGlobalSettings(),
+        projectsApi.getTemplates(),
+        projectsApi.getKnowledgeBase()
+      ])
+      return { settings, tmpls, kb }
     }
-    loadData()
-  }, [])
+  })
+
+  useEffect(() => {
+    if (!adminData) return
+    let cancelled = false
+    queueMicrotask(() => {
+      if (cancelled) return
+      setInflationRate(adminData.settings.inflationRate)
+      setMaxBudget(adminData.settings.maxBudget)
+      setSubsidyRate(adminData.settings.defaultSubsidyRate)
+      setTemplates(adminData.tmpls)
+      setKnowledgeBase(adminData.kb)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [adminData])
+
   const [newKBEntry, setNewKBEntry] = useState({
     title: "",
     region: "",
@@ -127,7 +133,7 @@ export function AdminOverview({ user }: AdminOverviewProps) {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+        <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
         <p>Загрузка панели администратора...</p>
       </div>
     )
@@ -353,11 +359,11 @@ export function AdminOverview({ user }: AdminOverviewProps) {
         <CardContent>
           <div className="grid md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-blue-600">94.5%</p>
+              <p className="text-3xl font-bold text-primary">94.5%</p>
               <p className="text-xs text-muted-foreground mt-1">Точность соответствия</p>
             </div>
             <div className="text-center">
-              <p className="text-3xl font-bold text-emerald-600">127</p>
+              <p className="text-3xl font-bold text-primary">127</p>
               <p className="text-xs text-muted-foreground mt-1">Успешных мэтчей</p>
             </div>
             <div className="text-center">

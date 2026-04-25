@@ -1,9 +1,14 @@
 fastapi
-uvicorn
+uvicorn[standard]
+httpx
 pydantic
 python-multipart
 sqlalchemy
 python-jose[cryptography]
 passlib[bcrypt]
 bcrypt==3.2.0
-
+python-dotenv
+psycopg2-binary
+alembic
+geoalchemy2
+websockets

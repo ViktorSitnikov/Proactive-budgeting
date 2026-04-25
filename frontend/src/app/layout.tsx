@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
-import { ApplicationProvider } from '../shared/lib/application-context';
+import Providers from './providers';
 import { Toaster } from '@/components/ui/toaster';
 
 const _geist = Geist({ subsets: ["latin"] });
@@ -35,10 +35,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <ApplicationProvider>
+        <Providers>
           {children}
           <Toaster />
-        </ApplicationProvider>
+        </Providers>
       </body>
     </html>
   )

@@ -24,7 +24,13 @@ const UNITS = [
   "усл. ед."
 ]
 
-interface Resource {
+export interface Supplier {
+  price: number
+  name: string
+  url: string
+}
+
+export interface Resource {
   id: string
   name?: string
   resource?: string
@@ -32,6 +38,7 @@ interface Resource {
   unit?: string
   estimatedCost?: number
   basePrice?: number
+  suppliers?: Supplier[]
 }
 
 interface ResourceTableProps {
@@ -48,22 +55,40 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
     resource: "",
     quantity: 1,
     unit: "шт.",
-    estimatedCost: 0,
-    basePrice: 0,
+    suppliers: [
+      { price: 0, name: "", url: "" },
+      { price: 0, name: "", url: "" },
+      { price: 0, name: "", url: "" },
+    ],
   })
 
   const getResourceName = (r: Resource) => r.resource || r.name || ""
-  const getResourcePrice = (r: Resource) => r.basePrice ?? r.estimatedCost ?? 0
+  const getResourcePrice = (r: Partial<Resource>) => {
+    if (r.suppliers && r.suppliers.length > 0) {
+      const prices = r.suppliers.map(s => s.price).filter(p => !isNaN(p) && p > 0);
+      if (prices.length > 0) return Math.min(...prices);
+    }
+    return r.basePrice ?? r.estimatedCost ?? 0
+  }
 
   const handleEdit = (resource: Resource) => {
     setEditingId(resource.id)
-    setEditForm({ ...resource })
+    const sups = resource.suppliers && resource.suppliers.length === 3
+      ? resource.suppliers
+      : [
+          { price: resource.basePrice || resource.estimatedCost || 0, name: "", url: "" },
+          { price: 0, name: "", url: "" },
+          { price: 0, name: "", url: "" },
+        ]
+    setEditForm({ ...resource, suppliers: sups })
   }
 
   const handleSaveEdit = () => {
     if (editForm) {
-      const updated = resources.map((r) => (r.id === editingId ? editForm : r))
-      onResourcesChange(updated)
+      const price = getResourcePrice(editForm)
+      const finalForm = { ...editForm, basePrice: price, estimatedCost: price }
+      const updated = resources.map((r) => (r.id === editingId ? finalForm : r))
+      onResourcesChange(updated as Resource[])
       setEditingId(null)
       setEditForm(null)
     }
@@ -80,7 +105,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
   }
 
   const handleAdd = () => {
-    const price = getResourcePrice(newResource as Resource)
+    const price = getResourcePrice(newResource)
     const newRes: Resource = {
       id: `res-${Date.now()}`,
       name: newResource.name || newResource.resource || "",
@@ -89,9 +114,20 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
       unit: newResource.unit || "шт.",
       estimatedCost: price,
       basePrice: price,
+      suppliers: newResource.suppliers,
     }
     onResourcesChange([...resources, newRes])
-    setNewResource({ name: "", resource: "", quantity: 1, unit: "шт.", estimatedCost: 0, basePrice: 0 })
+    setNewResource({ 
+      name: "", 
+      resource: "", 
+      quantity: 1, 
+      unit: "шт.",
+      suppliers: [
+        { price: 0, name: "", url: "" },
+        { price: 0, name: "", url: "" },
+        { price: 0, name: "", url: "" },
+      ],
+    })
     setIsAdding(false)
   }
 
@@ -113,7 +149,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                 <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Ресурс</th>
                 <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Кол-во</th>
                 <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Ед.</th>
-                <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Цена</th>
+                <th className="text-left p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Поставщики</th>
                 <th className="text-right p-3 font-bold text-slate-500 uppercase text-[10px] tracking-wider">Действия</th>
               </tr>
             </thead>
@@ -159,12 +195,46 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                         </Select>
                       </td>
                       <td className="p-2">
-                        <Input
-                          type="number"
-                          value={getResourcePrice(editForm)}
-                          onChange={(e) => setEditForm({ ...editForm, basePrice: Number(e.target.value), estimatedCost: Number(e.target.value) })}
-                          className="h-9 w-24"
-                        />
+                        <div className="flex flex-col gap-2">
+                          {[0, 1, 2].map((i) => (
+                            <div key={i} className="flex gap-2 items-center">
+                              <Input
+                                type="number"
+                                placeholder="Цена"
+                                value={editForm.suppliers?.[i]?.price || ""}
+                                onChange={(e) => {
+                                  const newSups = [...(editForm.suppliers || [])]
+                                  if (!newSups[i]) newSups[i] = { price: 0, name: "", url: "" }
+                                  newSups[i].price = Number(e.target.value)
+                                  setEditForm({ ...editForm, suppliers: newSups })
+                                }}
+                                className="h-8 w-full text-xs"
+                              />
+                              <Input
+                                placeholder="Поставщик"
+                                value={editForm.suppliers?.[i]?.name || ""}
+                                onChange={(e) => {
+                                  const newSups = [...(editForm.suppliers || [])]
+                                  if (!newSups[i]) newSups[i] = { price: 0, name: "", url: "" }
+                                  newSups[i].name = e.target.value
+                                  setEditForm({ ...editForm, suppliers: newSups })
+                                }}
+                                className="h-8 w-full text-xs"
+                              />
+                              <Input
+                                placeholder="Ссылка"
+                                value={editForm.suppliers?.[i]?.url || ""}
+                                onChange={(e) => {
+                                  const newSups = [...(editForm.suppliers || [])]
+                                  if (!newSups[i]) newSups[i] = { price: 0, name: "", url: "" }
+                                  newSups[i].url = e.target.value
+                                  setEditForm({ ...editForm, suppliers: newSups })
+                                }}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                          ))}
+                        </div>
                       </td>
                         <td className="p-2 text-right">
                           <div className="flex justify-end gap-1">
@@ -188,8 +258,26 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                         <td className="p-3 text-slate-400 font-medium uppercase text-[10px]">
                           {resource.unit || 'шт.'}
                         </td>
-                        <td className="p-3 font-bold text-slate-900">
-                          {(price || 0).toLocaleString()} ₽
+                        <td className="p-3">
+                          <div className="flex flex-col gap-2">
+                            {resource.suppliers && resource.suppliers.length > 0 ? (
+                              resource.suppliers.map((s, i) => (
+                                <div key={i} className="flex items-center gap-2 text-xs">
+                                  <span className="font-bold text-slate-900 min-w-[70px]">{(s.price || 0).toLocaleString()} ₽</span>
+                                  <span className="text-slate-600 truncate max-w-[120px]" title={s.name}>{s.name || "Не указан"}</span>
+                                  {s.url ? (
+                                    <a href={s.url} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline truncate max-w-[100px]" title={s.url}>
+                                      Ссылка
+                                    </a>
+                                  ) : (
+                                    <span className="text-slate-400">Нет ссылки</span>
+                                  )}
+                                </div>
+                              ))
+                            ) : (
+                              <span className="font-bold text-slate-900">{(price || 0).toLocaleString()} ₽</span>
+                            )}
+                          </div>
                         </td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end gap-1">
@@ -244,13 +332,46 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                     </Select>
                   </td>
                   <td className="p-2">
-                    <Input
-                      type="number"
-                      placeholder="0"
-                      value={getResourcePrice(newResource as Resource)}
-                      onChange={(e) => setNewResource({ ...newResource, basePrice: Number(e.target.value), estimatedCost: Number(e.target.value) })}
-                      className="h-9 w-24"
-                    />
+                    <div className="flex flex-col gap-2">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className="flex gap-2 items-center">
+                          <Input
+                            type="number"
+                            placeholder="Цена"
+                            value={newResource.suppliers?.[i]?.price || ""}
+                            onChange={(e) => {
+                              const newSups = [...(newResource.suppliers || [])]
+                              if (!newSups[i]) newSups[i] = { price: 0, name: "", url: "" }
+                              newSups[i].price = Number(e.target.value)
+                              setNewResource({ ...newResource, suppliers: newSups })
+                            }}
+                            className="h-8 w-24 text-xs"
+                          />
+                          <Input
+                            placeholder="Поставщик"
+                            value={newResource.suppliers?.[i]?.name || ""}
+                            onChange={(e) => {
+                              const newSups = [...(newResource.suppliers || [])]
+                              if (!newSups[i]) newSups[i] = { price: 0, name: "", url: "" }
+                              newSups[i].name = e.target.value
+                              setNewResource({ ...newResource, suppliers: newSups })
+                            }}
+                            className="h-8 w-full text-xs"
+                          />
+                          <Input
+                            placeholder="Ссылка"
+                            value={newResource.suppliers?.[i]?.url || ""}
+                            onChange={(e) => {
+                              const newSups = [...(newResource.suppliers || [])]
+                              if (!newSups[i]) newSups[i] = { price: 0, name: "", url: "" }
+                              newSups[i].url = e.target.value
+                              setNewResource({ ...newResource, suppliers: newSups })
+                            }}
+                            className="h-8 w-full text-xs"
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </td>
                   <td className="p-2 text-right">
                     <div className="flex justify-end gap-1">

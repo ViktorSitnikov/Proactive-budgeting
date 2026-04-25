@@ -1,28 +1,37 @@
-from fastapi import FastAPI, HTTPException, Body, Depends, status, File, UploadFile
+from fastapi import FastAPI, HTTPException, Body, Depends, status, File, UploadFile, BackgroundTasks, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
-from typing import List, Optional, Dict
+from sqlalchemy import func, or_
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
 import os
 import shutil
 from schemas import (
     Project, ProjectStatus, ProjectStatusUpdate, ProjectEstimateUpdate,
-    JoinRequestAction, PartnerRequest, NGO_PartnerRequest, AppealAction, Draft, NPO, NPOStatusUpdate,
+    JoinRequestAction, PartnerRequest, NGO_PartnerRequest, AppealAction, Draft, Resource, NPO, NPOStatusUpdate,
     Resource, GlobalSettings, User, UserRegister, UserLogin, Token, UserRole,
-    Opportunity, ProjectDetails, Template, KnowledgeBaseEntry, UserUpdate
+    Opportunity, ProjectDetails, Template, KnowledgeBaseEntry, UserUpdate, PolygonIntersectionRequest
 )
-from models import DBProject, DBDraft, DBNPO, DBResource, DBGlobalSettings, DBUser, DBOpportunity, DBProjectDetails, DBTemplate, DBKnowledgeBaseEntry
+from models import DBProject, DBNPO, DBResource, DBGlobalSettings, DBUser, DBOpportunity, DBProjectDetails, DBTemplate, DBKnowledgeBaseEntry
 from database import get_db
 import database
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+from geoalchemy2.elements import WKTElement
+
+from dotenv import load_dotenv
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+load_dotenv(dotenv_path=os.path.join(BASE_DIR, ".env"), override=True, encoding="utf-8")
 
 # Auth Constants
-SECRET_KEY = "SUPER_SECRET_KEY_CHANGE_ME"
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -52,6 +61,43 @@ async def startup_event():
     # Инициализация БД при старте сервера
     database.init_db()
 
+# --- WebSockets ---
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = []
+        self.active_connections[user_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, user_id: str):
+        if user_id in self.active_connections:
+            if websocket in self.active_connections[user_id]:
+                self.active_connections[user_id].remove(websocket)
+            if not self.active_connections[user_id]:
+                del self.active_connections[user_id]
+
+    async def send_personal_message(self, message: dict, user_id: str):
+        if user_id in self.active_connections:
+            for connection in self.active_connections[user_id]:
+                try:
+                    await connection.send_json(message)
+                except Exception as e:
+                    print(f"Error sending message to {user_id}: {e}")
+
+manager = ConnectionManager()
+
+@app.websocket("/api/ws/notifications/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)
+
 # --- Auth Helpers ---
 
 def verify_password(plain_password, hashed_password):
@@ -59,6 +105,111 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
+
+
+def _build_point_wkt(coordinates: Dict) -> Optional[WKTElement]:
+    if not coordinates:
+        return None
+    lat = coordinates.get("lat")
+    lng = coordinates.get("lng")
+    if lat is None or lng is None:
+        return None
+    return WKTElement(f"POINT({float(lng)} {float(lat)})", srid=4326)
+
+
+def _build_polygon_wkt(points: List[List[float]]) -> WKTElement:
+    if len(points) < 3:
+        raise HTTPException(status_code=400, detail="Polygon must contain at least 3 points")
+    try:
+        normalized = [
+            (float(p[0]), float(p[1]))
+            for p in points
+            if isinstance(p, list) and len(p) == 2
+        ]
+    except (TypeError, ValueError):
+        raise HTTPException(status_code=400, detail="Each polygon point must be [lng, lat]")
+    if len(normalized) < 3:
+        raise HTTPException(status_code=400, detail="Each polygon point must be [lng, lat]")
+    if normalized[0] != normalized[-1]:
+        normalized.append(normalized[0])
+    ring = ", ".join([f"{lng} {lat}" for lng, lat in normalized])
+    return WKTElement(f"POLYGON(({ring}))", srid=4326)
+
+
+def _derive_coordinates_from_polygon(points: Optional[List[List[float]]]) -> Optional[Dict[str, float]]:
+    """Возвращает центр полигона в формате {lat, lng} на основе [lng, lat] точек."""
+    if not points:
+        return None
+    normalized: List[List[float]] = []
+    for p in points:
+        if isinstance(p, list) and len(p) == 2:
+            try:
+                normalized.append([float(p[0]), float(p[1])])
+            except (TypeError, ValueError):
+                continue
+    if len(normalized) < 3:
+        return None
+    # Убираем замыкающую дубликат-точку, если есть.
+    if normalized[0][0] == normalized[-1][0] and normalized[0][1] == normalized[-1][1]:
+        normalized = normalized[:-1]
+    if not normalized:
+        return None
+    lng = sum(p[0] for p in normalized) / len(normalized)
+    lat = sum(p[1] for p in normalized) / len(normalized)
+    return {"lat": lat, "lng": lng}
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _draft_resources_to_schema(raw: Any) -> List[Resource]:
+    if not raw:
+        return []
+    out: List[Resource] = []
+    for i, item in enumerate(raw):
+        if not isinstance(item, dict):
+            continue
+        data = dict(item)
+        if not data.get("id"):
+            data["id"] = f"draft-res-{i}"
+        try:
+            out.append(Resource.model_validate(data))
+        except Exception:
+            out.append(
+                Resource(
+                    id=data.get("id", f"draft-res-{i}"),
+                    resource=data.get("resource") or data.get("name"),
+                    category=data.get("category") or "Прочее",
+                    basePrice=float(data.get("basePrice") or 0),
+                    quantity=float(data.get("quantity") or 0),
+                )
+            )
+    return out
+
+
+def _project_row_to_draft(p: DBProject) -> Draft:
+    ts = p.updated_at or p.created_at or _utcnow()
+    project_photos = list(p.project_photos) if p.project_photos else (list(p.photos) if p.photos else [])
+    analysis_photos = list(p.analysis_photos) if p.analysis_photos else []
+    return Draft(
+        id=p.id,
+        initiatorId=p.initiatorId,
+        title=p.title,
+        description=p.description or "",
+        lastModified=ts.isoformat(),
+        status="DRAFT",
+        step=p.draft_step or 1,
+        resources=_draft_resources_to_schema(p.resources),
+        type=p.type,
+        photos=project_photos,
+        projectPhotos=project_photos,
+        analysisPhotos=analysis_photos,
+        location=p.location,
+        coordinates=p.coordinates,
+        polygon=p.polygon,
+    )
+
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -198,54 +349,188 @@ async def get_user(user_id: str, db: Session = Depends(get_db)):
         avatar=user.avatar
     )
 
-# --- Drafts ---
+# --- AI Check ---
+import httpx
+
+class CheckIdeaRequest(BaseModel):
+    idea: str
+
+@app.post("/api/projects/check-idea")
+async def check_idea(payload: CheckIdeaRequest, current_user: DBUser = Depends(get_current_user)):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                "http://26.217.14.46:8000/api/check-idea",
+                json={"idea": payload.idea},
+                timeout=15.0
+            )
+            response.raise_for_status()
+            return response.json()
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=503, detail=f"AI service unavailable: {exc}")
+    except httpx.HTTPStatusError as exc:
+        raise HTTPException(status_code=exc.response.status_code, detail="Error from AI service")
+
+# --- Drafts (строки в projects со status=DRAFT) ---
+
+async def _update_draft_category_bg(draft_id: str, description: str):
+    from database import SessionLocal
+    try:
+        async with httpx.AsyncClient() as client:
+            ai_resp = await client.post(
+                "http://26.217.14.46:8000/api/check-idea",
+                json={"idea": description},
+                timeout=10.0
+            )
+            if ai_resp.status_code == 200:
+                ai_data = ai_resp.json()
+                if ai_data.get("category"):
+                    with SessionLocal() as db:
+                        draft = db.query(DBProject).filter(DBProject.id == draft_id).first()
+                        if draft:
+                            draft.type = ai_data["category"]
+                            db.commit()
+    except Exception as e:
+        print(f"Ошибка фонового обновления категории черновика: {e}")
 
 @app.get("/api/projects/drafts", response_model=List[Draft])
 async def get_drafts(current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
-    return db.query(DBDraft).filter(DBDraft.initiatorId == current_user.id).all()
+    rows = (
+        db.query(DBProject)
+        .filter(DBProject.initiatorId == current_user.id, DBProject.status == "DRAFT")
+        .all()
+    )
+    return [_project_row_to_draft(p) for p in rows]
 
 @app.post("/api/projects/drafts", response_model=Draft)
-async def create_draft(draft_data: Dict = Body(...), current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
-    new_draft = DBDraft(
+async def create_draft(background_tasks: BackgroundTasks, draft_data: Dict = Body(...), current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    now = _utcnow()
+    polygon = draft_data.get("polygon")
+    derived_coords = _derive_coordinates_from_polygon(polygon)
+    coords = derived_coords or draft_data.get("coordinates") or {"lat": 56.8389, "lng": 60.6057}
+    new_draft = DBProject(
         id=str(uuid.uuid4()),
         initiatorId=current_user.id,
         title=draft_data.get("title", "Новый черновик"),
         description=draft_data.get("description", ""),
-        lastModified=datetime.now().isoformat(),
-        step=draft_data.get("step", 1),
+        budget=0,
+        image=draft_data.get(
+            "image",
+            "https://images.unsplash.com/photo-1585829365291-1762f55e972e?q=80&w=800&auto=format&fit=crop",
+        ),
+        location=draft_data.get("location") or "Не указано",
+        coordinates=coords,
+        status="DRAFT",
+        createdAt=now.strftime("%Y-%m-%d"),
+        participants=[],
+        pendingJoinRequests=[],
+        ngoPartnerRequests=[],
         resources=draft_data.get("resources", []),
-        type=draft_data.get("type")
+        type=draft_data.get("type"),
+        draft_step=draft_data.get("step", 1),
+        photos=draft_data.get("projectPhotos") or draft_data.get("photos"),
+        project_photos=draft_data.get("projectPhotos") or draft_data.get("photos"),
+        analysis_photos=draft_data.get("analysisPhotos"),
+        polygon=polygon,
+        created_at=now,
+        updated_at=now,
+        geom=_build_point_wkt(coords) if coords else None,
+        geom_polygon=_build_polygon_wkt(polygon) if polygon else None,
     )
     db.add(new_draft)
     db.commit()
     db.refresh(new_draft)
-    return new_draft
+    
+    description = new_draft.description
+    if description and len(description) > 10:
+        background_tasks.add_task(_update_draft_category_bg, new_draft.id, description)
+        
+    return _project_row_to_draft(new_draft)
 
 @app.get("/api/projects/drafts/{draft_id}", response_model=Draft)
 async def get_draft(draft_id: str, current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
-    draft = db.query(DBDraft).filter(DBDraft.id == draft_id, DBDraft.initiatorId == current_user.id).first()
+    draft = (
+        db.query(DBProject)
+        .filter(
+            DBProject.id == draft_id,
+            DBProject.initiatorId == current_user.id,
+            DBProject.status == "DRAFT",
+        )
+        .first()
+    )
     if not draft:
         raise HTTPException(status_code=404, detail="Draft not found")
-    return draft
+    return _project_row_to_draft(draft)
 
 @app.patch("/api/projects/drafts/{draft_id}", response_model=Draft)
-async def update_draft(draft_id: str, draft_data: Dict = Body(...), current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
-    draft = db.query(DBDraft).filter(DBDraft.id == draft_id, DBDraft.initiatorId == current_user.id).first()
+async def update_draft(draft_id: str, background_tasks: BackgroundTasks, draft_data: Dict = Body(...), current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
+    draft = (
+        db.query(DBProject)
+        .filter(
+            DBProject.id == draft_id,
+            DBProject.initiatorId == current_user.id,
+            DBProject.status == "DRAFT",
+        )
+        .first()
+    )
     if not draft:
         raise HTTPException(status_code=404, detail="Draft not found")
+
+    payload = dict(draft_data)
     
-    for key, value in draft_data.items():
-        if hasattr(draft, key) and key != "id" and key != "initiatorId":
+    should_check_ai = False
+    if "description" in payload:
+        old_desc = draft.description or ""
+        new_desc = payload["description"] or ""
+        if new_desc != old_desc and len(new_desc) > 10:
+            should_check_ai = True
+
+    if "step" in payload:
+        payload["draft_step"] = payload.pop("step")
+    if "polygon" in payload:
+        derived_coords = _derive_coordinates_from_polygon(payload.get("polygon"))
+        if derived_coords:
+            payload["coordinates"] = derived_coords
+        polygon = payload.get("polygon")
+        draft.geom_polygon = _build_polygon_wkt(polygon) if polygon else None
+
+    if "coordinates" in payload:
+        draft.geom = _build_point_wkt(payload.get("coordinates"))
+
+    skip = {"id", "initiatorId", "lastModified", "status"}
+    for key, value in payload.items():
+        if key in skip:
+            continue
+        if hasattr(draft, key):
             setattr(draft, key, value)
-    
-    draft.lastModified = datetime.now().isoformat()
+    if "projectPhotos" in payload:
+        draft.project_photos = payload.get("projectPhotos")
+        draft.photos = payload.get("projectPhotos")
+    if "analysisPhotos" in payload:
+        draft.analysis_photos = payload.get("analysisPhotos")
+
+    draft.updated_at = _utcnow()
+    if draft.coordinates:
+        draft.geom = _build_point_wkt(draft.coordinates)
     db.commit()
     db.refresh(draft)
-    return draft
+    
+    if should_check_ai:
+        background_tasks.add_task(_update_draft_category_bg, draft.id, draft.description)
+        
+    return _project_row_to_draft(draft)
 
 @app.delete("/api/projects/drafts/{draft_id}")
 async def delete_draft(draft_id: str, current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
-    draft = db.query(DBDraft).filter(DBDraft.id == draft_id, DBDraft.initiatorId == current_user.id).first()
+    draft = (
+        db.query(DBProject)
+        .filter(
+            DBProject.id == draft_id,
+            DBProject.initiatorId == current_user.id,
+            DBProject.status == "DRAFT",
+        )
+        .first()
+    )
     if draft:
         db.delete(draft)
         db.commit()
@@ -257,41 +542,136 @@ async def delete_draft(draft_id: str, current_user: DBUser = Depends(get_current
 async def create_project(project_data: Dict = Body(...), current_user: DBUser = Depends(get_current_user), db: Session = Depends(get_db)):
     # Calculate total budget from resources if provided
     resources = project_data.get("resources", [])
-    total_budget = sum(r.get("basePrice", 0) * r.get("quantity", 0) for r in resources)
-    if total_budget == 0:
-        total_budget = project_data.get("budget", 0)
+    total_budget = project_data.get("budget")
+    if not total_budget:
+        total_budget = sum(r.get("basePrice", 0) * r.get("quantity", 0) for r in resources)
+
+    polygon = project_data.get("polygon")
+    coordinates = _derive_coordinates_from_polygon(polygon) or project_data.get("coordinates", {"lat": 56.8380, "lng": 60.6030})
+    project_photos = project_data.get("projectPhotos") or []
+    analysis_photos = project_data.get("analysisPhotos") or []
+    now = _utcnow()
+    draft_id = project_data.get("draftId")
+
+    project_type = project_data.get("type", "Благоустройство")
+    description = project_data.get("description", "")
+    
+    if description:
+        try:
+            async with httpx.AsyncClient() as client:
+                ai_resp = await client.post(
+                    "http://26.217.14.46:8000/api/check-idea",
+                    json={"idea": description},
+                    timeout=10.0
+                )
+                if ai_resp.status_code == 200:
+                    ai_data = ai_resp.json()
+                    if ai_data.get("category"):
+                        project_type = ai_data["category"]
+        except Exception as e:
+            print(f"Ошибка при определении категории проекта через ИИ: {e}")
+
+    if draft_id:
+        existing = (
+            db.query(DBProject)
+            .filter(
+                DBProject.id == draft_id,
+                DBProject.initiatorId == current_user.id,
+                DBProject.status == "DRAFT",
+            )
+            .first()
+        )
+        if existing:
+            existing.title = project_data.get("title", existing.title)
+            existing.description = project_data.get("description", existing.description)
+            existing.budget = total_budget
+            existing.image = project_data.get(
+                "image",
+                existing.image
+                or "https://images.unsplash.com/photo-1585829365291-1762f55e972e?q=80&w=800&auto=format&fit=crop",
+            )
+            if not project_data.get("image") and project_photos:
+                existing.image = project_photos[0]
+            existing.location = project_data.get("location", existing.location)
+            existing.coordinates = coordinates
+            existing.status = project_data.get("status", "ACTIVE")
+            existing.resources = resources
+            existing.type = project_type
+            existing.ai_score = project_data.get("ai_score", 100)
+            existing.search_radius = project_data.get("search_radius", 500)
+            existing.geom = _build_point_wkt(coordinates)
+            existing.geom_polygon = _build_polygon_wkt(polygon) if polygon else None
+            existing.project_photos = project_photos
+            existing.analysis_photos = analysis_photos
+            existing.photos = project_photos
+            if polygon is not None:
+                existing.polygon = polygon
+            existing.draft_step = None
+            existing.updated_at = now
+            existing.createdAt = project_data.get("createdAt") or now.strftime("%Y-%m-%d")
+            parts = list(existing.participants or [])
+            if current_user.name and current_user.name not in parts:
+                parts.insert(0, current_user.name)
+            if not parts:
+                parts = [current_user.name]
+            existing.participants = parts
+            db.commit()
+            db.refresh(existing)
+            return existing
 
     new_project = DBProject(
         id=str(uuid.uuid4()),
         title=project_data.get("title", "Новый проект"),
         description=project_data.get("description", ""),
         budget=total_budget,
-        image=project_data.get("image", "https://images.unsplash.com/photo-1585829365291-1762f55e972e?q=80&w=800&auto=format&fit=crop"),
+        image=project_data.get("image") or (project_photos[0] if project_photos else "https://images.unsplash.com/photo-1585829365291-1762f55e972e?q=80&w=800&auto=format&fit=crop"),
         location=project_data.get("location", "Не указано"),
-        coordinates=project_data.get("coordinates", {"lat": 56.8380, "lng": 60.6030}),
+        coordinates=coordinates,
         status=project_data.get("status", "ACTIVE"),
         initiatorId=current_user.id,
-        createdAt=datetime.now().strftime("%Y-%m-%d"),
+        createdAt=now.strftime("%Y-%m-%d"),
         participants=[current_user.name], # Добавляем инициатора в участники
         pendingJoinRequests=[],
         ngoPartnerRequests=[],
         resources=resources,
-        type=project_data.get("type"),
+        type=project_type,
         ai_score=project_data.get("ai_score", 100),
-        search_radius=project_data.get("search_radius", 500)
+        search_radius=project_data.get("search_radius", 500),
+        geom=_build_point_wkt(coordinates),
+        geom_polygon=_build_polygon_wkt(polygon) if polygon else None,
+        project_photos=project_photos,
+        analysis_photos=analysis_photos,
+        photos=project_photos,
+        polygon=polygon,
+        created_at=now,
+        updated_at=now,
     )
     db.add(new_project)
-    
-    # If project was created from a draft, delete the draft
-    draft_id = project_data.get("draftId")
-    if draft_id:
-        draft = db.query(DBDraft).filter(DBDraft.id == draft_id).first()
-        if draft:
-            db.delete(draft)
-            
     db.commit()
     db.refresh(new_project)
     return new_project
+
+
+@app.post("/api/projects/intersections", response_model=List[Project])
+async def find_polygon_intersections(payload: PolygonIntersectionRequest, db: Session = Depends(get_db)):
+    if not payload.coordinates or len(payload.coordinates) < 3:
+        return []
+        
+    selected_polygon = _build_polygon_wkt(payload.coordinates)
+    
+    query = db.query(DBProject).filter(
+        or_(
+            func.ST_Intersects(DBProject.geom_polygon, selected_polygon),
+            func.ST_Intersects(DBProject.geom, selected_polygon),
+        )
+    )
+    
+    if payload.draftId:
+        query = query.filter(DBProject.id != payload.draftId)
+        
+    intersections = query.all()
+    
+    return intersections
 
 @app.get("/api/projects", response_model=List[Project])
 async def get_projects(
@@ -302,7 +682,7 @@ async def get_projects(
     radius: Optional[int] = 500,
     db: Session = Depends(get_db)
 ):
-    query = db.query(DBProject)
+    query = db.query(DBProject).filter(DBProject.status != "DRAFT")
     if initiator_id:
         query = query.filter(DBProject.initiatorId == initiator_id)
     if npo_id:
@@ -393,6 +773,15 @@ async def join_project(project_id: str, current_user: DBUser = Depends(get_curre
         project.pendingJoinRequests = pending
         db.commit()
         
+        import asyncio
+        asyncio.create_task(manager.send_personal_message({
+            "type": "new_join_request",
+            "project_id": project.id,
+            "project_title": project.title,
+            "user_name": current_user.name,
+            "message": f"Новый запрос на присоединение от {current_user.name}"
+        }, project.initiatorId))
+        
     return {"message": "Join request sent"}
 
 @app.post("/api/projects/{project_id}/requests")
@@ -414,6 +803,17 @@ async def handle_join_request(project_id: str, request: JoinRequestAction, db: S
         
         db.commit()
         db.refresh(project)
+        
+        user = db.query(DBUser).filter(DBUser.name == request.name).first()
+        if user:
+            import asyncio
+            status_text = "одобрен" if request.action == "approve" else "отклонен"
+            asyncio.create_task(manager.send_personal_message({
+                "type": "join_request_result",
+                "project_id": project.id,
+                "project_title": project.title,
+                "message": f"Ваш запрос на присоединение к проекту «{project.title}» был {status_text}."
+            }, user.id))
     
     return {"message": f"Request {request.action}ed for {request.name}", "project": project}
 
@@ -515,4 +915,4 @@ async def retrain_model(model_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=4000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)

@@ -9,10 +9,12 @@ import { ProjectMap } from "../../../shared/ui/project-map"
 
 interface MapSelectorProps {
   onLocationSelect: (location: { lat: number; lng: number; address: string }) => void
+  onPolygonSelect?: (polygon: number[][] | null) => void
   initialLocation?: { lat: number; lng: number; address: string }
+  initialPolygon?: number[][]
 }
 
-export function MapSelector({ onLocationSelect, initialLocation }: MapSelectorProps) {
+export function MapSelector({ onLocationSelect, onPolygonSelect, initialLocation, initialPolygon = [] }: MapSelectorProps) {
   const [selectedLocation, setSelectedLocation] = useState(
     initialLocation || {
       lat: 56.8389,
@@ -20,12 +22,19 @@ export function MapSelector({ onLocationSelect, initialLocation }: MapSelectorPr
       address: "Екатеринбург, Россия",
     },
   )
+  const [polygonPoints, setPolygonPoints] = useState<number[][]>(initialPolygon)
   const [searchQuery, setSearchQuery] = useState("")
   const [isSearching, setIsSearching] = useState(false)
 
   const handleLocationSelect = (location: { lat: number; lng: number; address: string }) => {
     setSelectedLocation(location)
     onLocationSelect(location)
+  }
+
+  const handlePolygonSelect = (polygon: number[][] | null) => {
+    const normalized = polygon ?? []
+    setPolygonPoints(normalized)
+    onPolygonSelect?.(polygon)
   }
 
   const handleSearch = async () => {
@@ -80,23 +89,37 @@ export function MapSelector({ onLocationSelect, initialLocation }: MapSelectorPr
           </Button>
         </div>
 
-        <div className="h-64 rounded-lg overflow-hidden border border-slate-200 shadow-inner">
+        <div className="rounded-lg">
           <ProjectMap 
             mode="picker"
             initialCenter={{ lat: selectedLocation.lat, lng: selectedLocation.lng }}
             initialZoom={15}
             onLocationSelect={handleLocationSelect}
-            className="h-full w-full"
+            onPolygonSelect={handlePolygonSelect}
+            enablePolygonDraw
+            initialPolygon={initialPolygon}
+            className="w-full h-full min-h-[300px] rounded-lg overflow-hidden border border-slate-200 shadow-inner"
           />
         </div>
 
-        <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+        {/* <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
           <span className="text-blue-600 font-bold uppercase text-[10px] block mb-1">Выбранная локация:</span>
           <p className="text-xs text-slate-700 leading-relaxed">{selectedLocation.address}</p>
-        </div>
+          
+          {polygonPoints.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-blue-200/50">
+              <span className="text-emerald-600 font-bold uppercase text-[10px] block mb-1">
+                Координаты полигона ({polygonPoints.length} точек):
+              </span>
+              <p className="text-[10px] text-slate-600 font-mono leading-relaxed bg-white/50 p-2 rounded border border-slate-100 break-words">
+                {polygonPoints.map(p => `[${p[0].toFixed(4)}, ${p[1].toFixed(4)}]`).join(', ')}
+              </p>
+            </div>
+          )}
+        </div> */}
         
         <p className="text-[11px] text-slate-400 italic">
-          * Вы можете найти адрес через поиск или просто кликнуть в нужное место на карте
+          * Вы можете найти адрес через поиск, кликнуть в нужное место и при необходимости нарисовать полигон
         </p>
       </div>
     </Card>

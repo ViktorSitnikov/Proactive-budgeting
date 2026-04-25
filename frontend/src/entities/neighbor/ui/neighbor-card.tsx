@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { MessageCircle } from "lucide-react"
-import type { Neighbor } from "@/shared/lib/mock-data"
+import type { Neighbor } from "@/src/shared/lib/mock-data"
 
 interface NeighborCardProps {
   neighbor: Neighbor

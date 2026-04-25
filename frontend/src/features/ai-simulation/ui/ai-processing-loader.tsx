@@ -1,10 +1,10 @@
-﻿"use client"
+"use client"
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Brain, Search, FileCheck, Calculator, Sparkles, AlertTriangle } from "lucide-react"
 
-export type LoaderMode = 'adequacy_duplicates' | 'resources' | 'template' | 'finalization'
+export type LoaderMode = "duplicates" | "resources" | "template" | "finalization"
 
 interface Stage {
   id: string
@@ -13,57 +13,72 @@ interface Stage {
 }
 
 const MODES: Record<LoaderMode, Stage[]> = {
-  adequacy_duplicates: [
-    { id: "adequacy", text: "Оцениваю адекватность описания и фото...", icon: <Search className="w-8 h-8 text-blue-500" /> },
-    { id: "duplicates", text: "Ищу похожие проекты в радиусе 500м...", icon: <Brain className="w-8 h-8 text-purple-500" /> },
+  duplicates: [
+    { id: "duplicates", text: "Анализирую координаты и ищу пересечения...", icon: <Search className="w-8 h-8 text-primary" /> },
+    { id: "duplicates2", text: "Проверяю похожие проекты в радиусе 500м...", icon: <Brain className="w-8 h-8 text-secondary" /> },
   ],
   resources: [
-    { id: "calc", text: "Анализирую объем работ по тексту и фото...", icon: <Calculator className="w-8 h-8 text-emerald-500" /> },
-    { id: "market", text: "Сверяюсь с рыночными ценами на ресурсы...", icon: <Calculator className="w-8 h-8 text-blue-500" /> },
+    { id: "calc", text: "Анализирую объем работ по тексту и фото...", icon: <Calculator className="w-8 h-8 text-primary" /> },
+    { id: "market", text: "Сверяюсь с рыночными ценами на ресурсы...", icon: <Calculator className="w-8 h-8 text-secondary" /> },
   ],
   template: [
-    { id: "legal", text: "Подбираю подходящий юридический шаблон...", icon: <FileCheck className="w-8 h-8 text-orange-500" /> },
-    { id: "packing", text: "Упаковываю данные в документ...", icon: <FileCheck className="w-8 h-8 text-emerald-500" /> },
+    { id: "legal", text: "Подбираю подходящий юридический шаблон...", icon: <FileCheck className="w-8 h-8 text-primary" /> },
+    { id: "packing", text: "Упаковываю данные в документ...", icon: <FileCheck className="w-8 h-8 text-primary" /> },
   ],
   finalization: [
-    { id: "verify", text: "Финальная проверка данных...", icon: <Sparkles className="w-8 h-8 text-yellow-500" /> },
-    { id: "npo", text: "Подбираю подходящие НКО для партнерства...", icon: <Brain className="w-8 h-8 text-blue-500" /> },
-  ]
+    { id: "verify", text: "Финальная проверка данных...", icon: <Sparkles className="w-8 h-8 text-primary" /> },
+    { id: "npo", text: "Подбираю подходящие НКО для партнерства...", icon: <Brain className="w-8 h-8 text-secondary" /> },
+  ],
 }
 
 interface AiProcessingLoaderProps {
   mode: LoaderMode
-  onComplete: () => void
+  onComplete: () => void | Promise<void>
   onFail?: (reason: string) => void
   failCondition?: boolean
 }
 
-export function AiProcessingLoader({ mode, onComplete, onFail, failCondition }: AiProcessingLoaderProps) {
+export function AiProcessingLoader({
+  mode,
+  onComplete,
+  onFail,
+  failCondition,
+}: AiProcessingLoaderProps) {
   const [currentStageIndex, setCurrentStageIndex] = useState(0)
   const [isFailed, setIsFailed] = useState(false)
   const stages = MODES[mode]
 
+  /** Фиксированная задержка между шагами */
   useEffect(() => {
     if (isFailed) return
 
     if (currentStageIndex < stages.length) {
       const timer = setTimeout(() => {
-        // Проверка условия провала на первом этапе оценки адекватности
         if (currentStageIndex === 0 && failCondition) {
           setIsFailed(true)
           setTimeout(() => {
-            onFail?.("Описание слишком короткое для анализа ИИ (минимум 2 символа).")
+            onFail?.("Ошибка анализа ИИ.")
           }, 2000)
           return
         }
-        setCurrentStageIndex(prev => prev + 1)
+        setCurrentStageIndex((prev) => prev + 1)
       }, 2000)
       return () => clearTimeout(timer)
-    } else {
-      const finalTimer = setTimeout(onComplete, 500)
-      return () => clearTimeout(finalTimer)
     }
-  }, [currentStageIndex, onComplete, stages, failCondition, isFailed, onFail])
+
+    const finalTimer = setTimeout(() => {
+      void Promise.resolve(onComplete())
+    }, 500)
+    return () => clearTimeout(finalTimer)
+  }, [
+    currentStageIndex,
+    onComplete,
+    stages.length,
+    failCondition,
+    isFailed,
+    onFail,
+    mode,
+  ])
 
   const currentStage = stages[currentStageIndex] || stages[stages.length - 1]
 
@@ -101,7 +116,7 @@ export function AiProcessingLoader({ mode, onComplete, onFail, failCondition }: 
         >
           {currentStage.icon}
         </motion.div>
-        
+
         <motion.div
           animate={{
             scale: [1, 1.4, 1],
@@ -111,7 +126,7 @@ export function AiProcessingLoader({ mode, onComplete, onFail, failCondition }: 
             duration: 2,
             repeat: Infinity,
           }}
-          className="absolute inset-0 bg-blue-400 rounded-full blur-xl"
+          className="absolute inset-0 bg-primary/40 rounded-full blur-xl"
         />
       </div>
 
@@ -125,7 +140,7 @@ export function AiProcessingLoader({ mode, onComplete, onFail, failCondition }: 
             className="space-y-2"
           >
             <h3 className="text-xl font-bold flex items-center justify-center gap-2">
-              <Sparkles className="w-5 h-5 text-yellow-500 animate-pulse" />
+              <Sparkles className="w-5 h-5 text-primary animate-pulse" />
               AI Магия в процессе
             </h3>
             <p className="text-muted-foreground text-lg">
@@ -139,7 +154,7 @@ export function AiProcessingLoader({ mode, onComplete, onFail, failCondition }: 
             <div
               key={index}
               className={`h-1.5 w-12 rounded-full transition-colors duration-500 ${
-                index <= currentStageIndex ? "bg-blue-600" : "bg-slate-200"
+                index <= currentStageIndex ? "bg-primary" : "bg-muted"
               }`}
             />
           ))}

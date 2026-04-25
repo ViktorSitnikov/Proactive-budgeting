@@ -4,77 +4,110 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color palette for enterprise SaaS budgeting platform */
-  --background: oklch(0.99 0 0);
-  --foreground: oklch(0.15 0.01 255);
+  /* Инициативное бюджетирование Свердловской области (Малахитово-уральская палитра) */
+  --background: oklch(0.99 0 0); /* Белый */
+  --foreground: oklch(0.14 0 0); /* Темно-серый/почти черный для текста */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0.01 255);
+  --card-foreground: oklch(0.14 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.15 0.01 255);
-  --primary: oklch(0.47 0.13 262);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.005 255);
-  --secondary-foreground: oklch(0.15 0.01 255);
-  --muted: oklch(0.96 0.005 255);
-  --muted-foreground: oklch(0.55 0.015 255);
-  --accent: oklch(0.96 0.005 255);
-  --accent-foreground: oklch(0.15 0.01 255);
+  --popover-foreground: oklch(0.14 0 0);
+  
+  /* Primary - Малахитовый / Изумрудный (отсылка к уральским самоцветам) */
+  --primary: oklch(0.55 0.12 155); /* Насыщенный зеленый/малахитовый */
+  --primary-foreground: oklch(0.99 0 0); /* Белый текст на кнопках */
+  
+  /* Secondary - Глубокий синий (отсылка к рекам Урала и флагу СО) */
+  --secondary: oklch(0.40 0.15 255); 
+  --secondary-foreground: oklch(0.99 0 0);
+  
+  /* Muted - Светло-серый с легким зеленым/синим оттенком */
+  --muted: oklch(0.96 0.01 155); 
+  --muted-foreground: oklch(0.50 0.02 155);
+  
+  /* Accent - Светло-зеленый для hover-состояний */
+  --accent: oklch(0.92 0.04 155);
+  --accent-foreground: oklch(0.20 0.05 155);
+  
+  /* Destructive - Красный */
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.92 0.005 255);
-  --input: oklch(0.92 0.005 255);
-  --ring: oklch(0.47 0.13 262);
-  --chart-1: oklch(0.62 0.25 165);
-  --chart-2: oklch(0.47 0.13 262);
-  --chart-3: oklch(0.73 0.19 75);
+  
+  /* Warning - Золотой/Желтый (отсылка к гербу) */
+  --warning: oklch(0.80 0.15 85);
+  --warning-foreground: oklch(0.20 0.05 85);
+  
+  --border: oklch(0.90 0.02 155);
+  --input: oklch(0.90 0.02 155);
+  --ring: oklch(0.55 0.12 155); /* Фокус-ринг тоже малахитовый */
+  
+  --chart-1: oklch(0.55 0.12 155); /* Малахит */
+  --chart-2: oklch(0.40 0.15 255); /* Синий */
+  --chart-3: oklch(0.80 0.15 85);  /* Золото */
   --chart-4: oklch(0.65 0.24 310);
   --chart-5: oklch(0.55 0.22 25);
   --radius: 0.75rem;
-  /* Custom sidebar colors for slate enterprise look */
-  --sidebar: oklch(0.98 0 0);
-  --sidebar-foreground: oklch(0.15 0.01 255);
-  --sidebar-primary: oklch(0.47 0.13 262);
+  
+  /* Custom sidebar colors */
+  --sidebar: oklch(0.98 0.01 155);
+  --sidebar-foreground: oklch(0.14 0 0);
+  --sidebar-primary: oklch(0.55 0.12 155);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.005 255);
-  --sidebar-accent-foreground: oklch(0.15 0.01 255);
-  --sidebar-border: oklch(0.92 0.005 255);
-  --sidebar-ring: oklch(0.47 0.13 262);
+  --sidebar-accent: oklch(0.92 0.04 155);
+  --sidebar-accent-foreground: oklch(0.20 0.05 155);
+  --sidebar-border: oklch(0.90 0.02 155);
+  --sidebar-ring: oklch(0.55 0.12 155);
 }
 
 .dark {
-  /* Dark mode colors adjusted for enterprise theme */
-  --background: oklch(0.13 0.01 255);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.15 0.01 255);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.13 0.01 255);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.55 0.17 262);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.22 0.015 255);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.22 0.015 255);
-  --muted-foreground: oklch(0.65 0.015 255);
-  --accent: oklch(0.22 0.015 255);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.46 0.18 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.25 0.015 255);
-  --input: oklch(0.25 0.015 255);
-  --ring: oklch(0.55 0.17 262);
-  --chart-1: oklch(0.62 0.25 165);
-  --chart-2: oklch(0.55 0.17 262);
-  --chart-3: oklch(0.73 0.19 75);
+  /* Инициативное бюджетирование Свердловской области (Тёмная тема) */
+  --background: oklch(0.18 0.02 155); /* Темно-зеленый фон, почти черный */
+  --foreground: oklch(0.95 0.01 155); /* Светло-зеленоватый/белый текст */
+  
+  --card: oklch(0.22 0.03 155); /* Чуть светлее фона */
+  --card-foreground: oklch(0.95 0.01 155);
+  
+  --popover: oklch(0.22 0.03 155);
+  --popover-foreground: oklch(0.95 0.01 155);
+  
+  /* Primary - Яркий изумрудный, читаемый на темном фоне */
+  --primary: oklch(0.65 0.15 155);
+  --primary-foreground: oklch(0.99 0 0); /* Белый текст на кнопке */
+  
+  /* Secondary - Яркий синий/голубой (реки/небо Урала) */
+  --secondary: oklch(0.55 0.20 255);
+  --secondary-foreground: oklch(0.99 0 0);
+  
+  --muted: oklch(0.30 0.04 155);
+  --muted-foreground: oklch(0.70 0.05 155);
+  
+  --accent: oklch(0.35 0.06 155);
+  --accent-foreground: oklch(0.95 0.01 155);
+  
+  --destructive: oklch(0.57 0.22 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  
+  /* Warning - Золотой/Желтый */
+  --warning: oklch(0.75 0.15 85);
+  --warning-foreground: oklch(0.15 0.05 85);
+  
+  --border: oklch(0.35 0.06 155);
+  --input: oklch(0.35 0.06 155);
+  --ring: oklch(0.65 0.15 155);
+  
+  --chart-1: oklch(0.65 0.15 155);
+  --chart-2: oklch(0.55 0.20 255);
+  --chart-3: oklch(0.75 0.15 85);
   --chart-4: oklch(0.65 0.24 310);
   --chart-5: oklch(0.55 0.22 25);
-  --sidebar: oklch(0.15 0.01 255);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.55 0.17 262);
+  
+  --sidebar: oklch(0.20 0.03 155);
+  --sidebar-foreground: oklch(0.95 0.01 155);
+  --sidebar-primary: oklch(0.65 0.15 155);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.22 0.015 255);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.25 0.015 255);
-  --sidebar-ring: oklch(0.55 0.17 262);
+  --sidebar-accent: oklch(0.35 0.06 155);
+  --sidebar-accent-foreground: oklch(0.95 0.01 155);
+  --sidebar-border: oklch(0.35 0.06 155);
+  --sidebar-ring: oklch(0.65 0.15 155);
 }
 
 @theme inline {
