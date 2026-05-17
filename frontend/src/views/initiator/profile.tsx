@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -35,6 +35,27 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
     bio: user.bio || "",
     avatar: user.avatar || "",
   })
+  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    if (isDirty) return
+    setFormData({
+      name: user.name,
+      email: user.email,
+      phone: user.phone || "",
+      address: user.address || "",
+      bio: user.bio || "",
+      avatar: user.avatar || "",
+    })
+  }, [user, isDirty])
+
+  const updateFormField = <K extends keyof typeof formData>(
+    field: K,
+    value: (typeof formData)[K]
+  ) => {
+    setIsDirty(true)
+    setFormData((prev) => ({ ...prev, [field]: value }))
+  }
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click()
@@ -47,7 +68,8 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
     try {
       setIsUploading(true)
       const { url } = await projectsApi.uploadFile(file)
-      setFormData({ ...formData, avatar: url })
+      setIsDirty(true)
+      setFormData((prev) => ({ ...prev, avatar: url }))
       toast({ title: "Успех", description: "Аватар загружен" })
     } catch (err) {
       toast({ variant: "destructive", title: "Ошибка", description: "Не удалось загрузить фото" })
@@ -67,8 +89,9 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
         avatar: formData.avatar
       })
       
-      queryClient.invalidateQueries({ queryKey: ['authUser'] })
-      
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] })
+      setIsDirty(false)
+
       toast({
       title: "Профиль сохранен",
         description: "Ваши изменения успешно сохранены на сервере",
@@ -156,7 +179,7 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
                     <Input
                       id="name"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) => updateFormField("name", e.target.value)}
                       className="pl-10"
                     />
                   </div>
@@ -170,7 +193,7 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      onChange={(e) => updateFormField("email", e.target.value)}
                       className="pl-10"
                     />
                   </div>
@@ -183,7 +206,7 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
                     <Input
                       id="phone"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => updateFormField("phone", e.target.value)}
                       className="pl-10"
                     />
                   </div>
@@ -196,7 +219,7 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
                     <Input
                       id="address"
                       value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      onChange={(e) => updateFormField("address", e.target.value)}
                       className="pl-10"
                     />
                   </div>
@@ -208,7 +231,7 @@ export function ProfilePage({ user, onBack, onLogout }: ProfilePageProps) {
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  onChange={(e) => updateFormField("bio", e.target.value)}
                   rows={4}
                 />
               </div>

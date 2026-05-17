@@ -5,12 +5,13 @@ import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { UserIcon, Briefcase, Clock, LogOut, TrendingUp, CheckCircle2, Globe, Building2, Bell } from "lucide-react"
+import { UserIcon, Briefcase, Clock, LogOut, TrendingUp, CheckCircle2, Globe, Bell } from "lucide-react"
 import { type User, type Project, ProjectStatuses } from "@/src/shared/lib/mock-data"
 import { ProfileStatsPage } from "./profile-stats"
 import { RequestedProjectsPage } from "./requested-projects"
 import { CurrentProjectsNPOPage } from "./current-projects"
 import { projectsApi } from "../../shared/api/projects"
+import { BrandMark } from "@/src/shared/ui/brand-mark"
 
 type NPOPage = "home" | "profile" | "requested" | "current-projects"
 
@@ -52,21 +53,11 @@ export function NPOHome({ user, onLogout }: NPOHomeProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="brand-page-gradient min-h-screen text-foreground">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-              <Building2 className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-black tracking-tight leading-none">
-                Городская<span className="text-primary">Инициатива</span>
-              </h1>
-              <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest mt-1">Партнерская панель</p>
-            </div>
-          </div>
+          <BrandMark tagline="Партнёрская панель" compact />
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-4 border-l pl-6">
               <div className="hidden md:block text-right">
@@ -184,7 +175,7 @@ export function NPOHome({ user, onLogout }: NPOHomeProps) {
           </div>
 
           {/* Social Proof Placeholder */}
-          <div className="bg-slate-900 rounded-[40px] p-12 text-white relative overflow-hidden">
+          <div className="brand-hero-panel rounded-[40px] p-12 text-primary-foreground relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 blur-[100px] -mr-32 -mt-32" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-600/20 blur-[100px] -ml-32 -mb-32" />
             

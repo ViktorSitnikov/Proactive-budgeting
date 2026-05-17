@@ -4,110 +4,105 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Инициативное бюджетирование Свердловской области (Малахитово-уральская палитра) */
-  --background: oklch(0.99 0 0); /* Белый */
-  --foreground: oklch(0.14 0 0); /* Темно-серый/почти черный для текста */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.14 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.14 0 0);
-  
-  /* Primary - Малахитовый / Изумрудный (отсылка к уральским самоцветам) */
-  --primary: oklch(0.55 0.12 155); /* Насыщенный зеленый/малахитовый */
-  --primary-foreground: oklch(0.99 0 0); /* Белый текст на кнопках */
-  
-  /* Secondary - Глубокий синий (отсылка к рекам Урала и флагу СО) */
-  --secondary: oklch(0.40 0.15 255); 
-  --secondary-foreground: oklch(0.99 0 0);
-  
-  /* Muted - Светло-серый с легким зеленым/синим оттенком */
-  --muted: oklch(0.96 0.01 155); 
-  --muted-foreground: oklch(0.50 0.02 155);
-  
-  /* Accent - Светло-зеленый для hover-состояний */
-  --accent: oklch(0.92 0.04 155);
-  --accent-foreground: oklch(0.20 0.05 155);
-  
-  /* Destructive - Красный */
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.99 0 0);
-  
-  /* Warning - Золотой/Желтый (отсылка к гербу) */
-  --warning: oklch(0.80 0.15 85);
-  --warning-foreground: oklch(0.20 0.05 85);
-  
-  --border: oklch(0.90 0.02 155);
-  --input: oklch(0.90 0.02 155);
-  --ring: oklch(0.55 0.12 155); /* Фокус-ринг тоже малахитовый */
-  
-  --chart-1: oklch(0.55 0.12 155); /* Малахит */
-  --chart-2: oklch(0.40 0.15 255); /* Синий */
-  --chart-3: oklch(0.80 0.15 85);  /* Золото */
-  --chart-4: oklch(0.65 0.24 310);
-  --chart-5: oklch(0.55 0.22 25);
+  /* Проектория — палитра брендбука */
+  --brand-cream: #f6f7ed;
+  --brand-lime: #dbe64c;
+  --brand-navy: #001f3f;
+  --brand-mantis: #74c365;
+  --brand-green: #00804c;
+  --brand-blue: #1e4890;
+
+  --background: var(--brand-cream);
+  --foreground: var(--brand-navy);
+  --card: #ffffff;
+  --card-foreground: var(--brand-navy);
+  --popover: #ffffff;
+  --popover-foreground: var(--brand-navy);
+
+  --primary: var(--brand-green);
+  --primary-foreground: var(--brand-cream);
+
+  --secondary: var(--brand-blue);
+  --secondary-foreground: var(--brand-cream);
+
+  --muted: #e8eadf;
+  --muted-foreground: #3d5a73;
+
+  --accent: var(--brand-lime);
+  --accent-foreground: var(--brand-navy);
+
+  --destructive: #c53030;
+  --destructive-foreground: #ffffff;
+
+  --warning: #e6a817;
+  --warning-foreground: var(--brand-navy);
+
+  --border: #d4d9c8;
+  --input: #d4d9c8;
+  --ring: var(--brand-mantis);
+
+  --chart-1: var(--brand-green);
+  --chart-2: var(--brand-blue);
+  --chart-3: var(--brand-lime);
+  --chart-4: var(--brand-mantis);
+  --chart-5: #5a7fb8;
+
   --radius: 0.75rem;
-  
-  /* Custom sidebar colors */
-  --sidebar: oklch(0.98 0.01 155);
-  --sidebar-foreground: oklch(0.14 0 0);
-  --sidebar-primary: oklch(0.55 0.12 155);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.92 0.04 155);
-  --sidebar-accent-foreground: oklch(0.20 0.05 155);
-  --sidebar-border: oklch(0.90 0.02 155);
-  --sidebar-ring: oklch(0.55 0.12 155);
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--brand-navy);
+  --sidebar-primary: var(--brand-green);
+  --sidebar-primary-foreground: var(--brand-cream);
+  --sidebar-accent: #eef0e4;
+  --sidebar-accent-foreground: var(--brand-navy);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--brand-mantis);
 }
 
 .dark {
-  /* Инициативное бюджетирование Свердловской области (Тёмная тема) */
-  --background: oklch(0.18 0.02 155); /* Темно-зеленый фон, почти черный */
-  --foreground: oklch(0.95 0.01 155); /* Светло-зеленоватый/белый текст */
-  
-  --card: oklch(0.22 0.03 155); /* Чуть светлее фона */
-  --card-foreground: oklch(0.95 0.01 155);
-  
-  --popover: oklch(0.22 0.03 155);
-  --popover-foreground: oklch(0.95 0.01 155);
-  
-  /* Primary - Яркий изумрудный, читаемый на темном фоне */
-  --primary: oklch(0.65 0.15 155);
-  --primary-foreground: oklch(0.99 0 0); /* Белый текст на кнопке */
-  
-  /* Secondary - Яркий синий/голубой (реки/небо Урала) */
-  --secondary: oklch(0.55 0.20 255);
-  --secondary-foreground: oklch(0.99 0 0);
-  
-  --muted: oklch(0.30 0.04 155);
-  --muted-foreground: oklch(0.70 0.05 155);
-  
-  --accent: oklch(0.35 0.06 155);
-  --accent-foreground: oklch(0.95 0.01 155);
-  
-  --destructive: oklch(0.57 0.22 25);
-  --destructive-foreground: oklch(0.99 0 0);
-  
-  /* Warning - Золотой/Желтый */
-  --warning: oklch(0.75 0.15 85);
-  --warning-foreground: oklch(0.15 0.05 85);
-  
-  --border: oklch(0.35 0.06 155);
-  --input: oklch(0.35 0.06 155);
-  --ring: oklch(0.65 0.15 155);
-  
-  --chart-1: oklch(0.65 0.15 155);
-  --chart-2: oklch(0.55 0.20 255);
-  --chart-3: oklch(0.75 0.15 85);
-  --chart-4: oklch(0.65 0.24 310);
-  --chart-5: oklch(0.55 0.22 25);
-  
-  --sidebar: oklch(0.20 0.03 155);
-  --sidebar-foreground: oklch(0.95 0.01 155);
-  --sidebar-primary: oklch(0.65 0.15 155);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.35 0.06 155);
-  --sidebar-accent-foreground: oklch(0.95 0.01 155);
-  --sidebar-border: oklch(0.35 0.06 155);
-  --sidebar-ring: oklch(0.65 0.15 155);
+  --background: var(--brand-navy);
+  --foreground: var(--brand-cream);
+  --card: #0a2542;
+  --card-foreground: var(--brand-cream);
+  --popover: #0a2542;
+  --popover-foreground: var(--brand-cream);
+
+  --primary: var(--brand-mantis);
+  --primary-foreground: var(--brand-navy);
+
+  --secondary: var(--brand-blue);
+  --secondary-foreground: var(--brand-cream);
+
+  --muted: #122d4d;
+  --muted-foreground: #b8c4d4;
+
+  --accent: var(--brand-lime);
+  --accent-foreground: var(--brand-navy);
+
+  --destructive: #f87171;
+  --destructive-foreground: var(--brand-navy);
+
+  --warning: #fbbf24;
+  --warning-foreground: var(--brand-navy);
+
+  --border: #1e3a5f;
+  --input: #1e3a5f;
+  --ring: var(--brand-lime);
+
+  --chart-1: var(--brand-mantis);
+  --chart-2: #5a8fd4;
+  --chart-3: var(--brand-lime);
+  --chart-4: var(--brand-green);
+  --chart-5: #93c5fd;
+
+  --sidebar: #071a30;
+  --sidebar-foreground: var(--brand-cream);
+  --sidebar-primary: var(--brand-mantis);
+  --sidebar-primary-foreground: var(--brand-navy);
+  --sidebar-accent: #122d4d;
+  --sidebar-accent-foreground: var(--brand-cream);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--brand-lime);
 }
 
 @theme inline {
@@ -149,6 +144,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand-cream: var(--brand-cream);
+  --color-brand-lime: var(--brand-lime);
+  --color-brand-navy: var(--brand-navy);
+  --color-brand-mantis: var(--brand-mantis);
+  --color-brand-green: var(--brand-green);
+  --color-brand-blue: var(--brand-blue);
 }
 
 @layer base {
@@ -158,4 +159,100 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@layer utilities {
+  .brand-page-gradient {
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--brand-cream) 88%, var(--brand-lime) 12%) 0%,
+      var(--background) 45%,
+      color-mix(in srgb, var(--background) 82%, var(--brand-mantis) 18%) 100%
+    );
+  }
+
+  .brand-hero-panel {
+    background: linear-gradient(
+      135deg,
+      var(--brand-navy) 0%,
+      var(--brand-blue) 55%,
+      color-mix(in srgb, var(--brand-blue) 60%, var(--brand-lime) 40%) 100%
+    );
+  }
+}
+
+/* docx-preview */
+.docx-viewport {
+  background: var(--muted);
+  border-radius: 0.375rem;
+  overflow: auto;
+  max-height: min(75vh, 900px);
+}
+
+.docx-viewport .docx-wrapper {
+  background: #fff;
+  margin: 1rem auto;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 24px rgb(0 31 63 / 0.08);
+}
+
+.docx-viewport table {
+  border-collapse: collapse;
+}
+
+.docx-html-fallback table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.docx-html-fallback th,
+.docx-html-fallback td {
+  border: 1px solid var(--border);
+  padding: 0.375rem 0.5rem;
+}
+
+.docx-editor-modal {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.docx-editor-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--muted);
+}
+
+.docx-editor-host .docx-editor-surface,
+.docx-editor-host > div {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100% !important;
+  width: 100% !important;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.docx-editor-host [class*="toolbar"],
+.docx-editor-host [class*="Toolbar"],
+.docx-editor-host [class*="menu-bar"],
+.docx-editor-host [class*="MenuBar"] {
+  flex-shrink: 0;
+}
+
+.docx-editor-host [class*="scroll"],
+.docx-editor-host [class*="Scroll"],
+.docx-editor-host [class*="viewport"],
+.docx-editor-host [class*="Viewport"],
+.docx-editor-host [class*="canvas"],
+.docx-editor-host [class*="Canvas"],
+.docx-editor-host [class*="page-container"],
+.docx-editor-host [class*="editor-content"] {
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  max-height: 100%;
+  overflow: auto !important;
 }

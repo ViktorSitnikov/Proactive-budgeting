@@ -349,7 +349,7 @@ export function AdminOverview({ user }: AdminOverviewProps) {
         </CardContent>
       </Card> */}
 
-      <Card className="bg-gradient-to-br from-blue-50 to-emerald-50">
+      <Card className="bg-gradient-to-br from-background to-muted">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="w-5 h-5" />

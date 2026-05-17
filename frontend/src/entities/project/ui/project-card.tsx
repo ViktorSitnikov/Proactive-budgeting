@@ -14,9 +14,9 @@ interface ProjectCardProps {
 export function ProjectCard({ project, onClick }: ProjectCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onClick={onClick}>
-      <div className="h-32 bg-gradient-to-br from-emerald-400/20 to-blue-400/20 relative">
+      <div className="h-32 bg-gradient-to-br from-brand-mantis/30 to-brand-blue/25 relative">
         <img src={getImageUrl(project.image)} alt={project.title} className="w-full h-full object-cover" />
-        <Badge className="absolute top-2 right-2 bg-emerald-500 text-white">{project.status}</Badge>
+        <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">{project.status}</Badge>
       </div>
       <CardHeader>
         <CardTitle className="text-base">{project.title}</CardTitle>

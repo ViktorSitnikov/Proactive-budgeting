@@ -176,7 +176,7 @@ export function RequestedProjectsPage({ user, onBack, onLogout }: RequestedProje
                         <Button 
                           onClick={() => handleAccept(project.id)} 
                           disabled={isAccepting === project.id}
-                          className="flex-[2] sm:flex-none gap-2 bg-slate-900 hover:bg-primary transition-all rounded-full px-4 md:px-8 shadow-xl text-xs md:text-sm h-9 md:h-10"
+                          className="flex-[2] sm:flex-none gap-2 bg-secondary hover:bg-primary transition-all rounded-full px-4 md:px-8 shadow-xl text-xs md:text-sm h-9 md:h-10"
                         >
                           {isAccepting === project.id ? (
                             <Loader2 className="w-3 md:w-4 h-3 md:h-4 animate-spin" />

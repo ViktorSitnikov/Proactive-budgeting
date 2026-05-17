@@ -61,8 +61,8 @@ export function ProfileStatsPage({ user, onBack, onLogout }: ProfileStatsPagePro
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Briefcase className="w-6 h-6 text-blue-600" />
+                  <div className="w-12 h-12 bg-accent/40 rounded-lg flex items-center justify-center">
+                    <Briefcase className="w-6 h-6 text-primary" />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">3</p>

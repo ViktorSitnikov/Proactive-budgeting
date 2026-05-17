@@ -17,11 +17,16 @@ import { useApplicationStore } from "@/src/shared/lib/application-store"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface InitiatorStep1Props {
-  onNext: () => void
+  onNext: (values: Step1FormValues) => Promise<void> | void
+  adequacyFeedback?: {
+    comment?: string
+    suggestion?: string
+  } | null
 }
 
 export function InitiatorStep1({
   onNext,
+  adequacyFeedback,
 }: InitiatorStep1Props) {
   const { data, updateData } = useApplicationStore()
 
@@ -51,7 +56,7 @@ export function InitiatorStep1({
 
   const onSubmit = (values: Step1FormValues) => {
     updateData(values)
-    onNext()
+    void Promise.resolve(onNext(values))
   }
 
   return (
@@ -88,6 +93,16 @@ export function InitiatorStep1({
               {...register("idea")}
             />
             {errors.idea && <p className="text-sm text-red-500 mt-1">{errors.idea.message}</p>}
+            {(adequacyFeedback?.comment || adequacyFeedback?.suggestion) && (
+              <Alert className="mt-3">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Комментарий AI-проверки</AlertTitle>
+                <AlertDescription className="space-y-1">
+                  {adequacyFeedback?.comment && <p>{adequacyFeedback.comment}</p>}
+                  {adequacyFeedback?.suggestion && <p><strong>Рекомендация:</strong> {adequacyFeedback.suggestion}</p>}
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <div className="space-y-5">

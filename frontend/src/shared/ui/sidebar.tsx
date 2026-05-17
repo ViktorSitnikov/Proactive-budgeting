@@ -52,8 +52,8 @@ export function Sidebar({ role, currentStep }: SidebarProps) {
       className="fixed left-0 top-0 h-full w-64 bg-sidebar border-r border-sidebar-border p-6 z-40"
     >
       <div className="mb-8">
-        <h1 className="text-xl font-bold text-sidebar-foreground">BudgetFlow</h1>
-        <p className="text-sm text-muted-foreground">Proactive Budgeting</p>
+        <h1 className="text-xl font-bold text-sidebar-foreground">Проектория</h1>
+        <p className="text-sm text-muted-foreground">Инициативное бюджетирование</p>
       </div>
 
       <nav className="space-y-2">

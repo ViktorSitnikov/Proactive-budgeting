@@ -119,7 +119,7 @@ export function AIModelsPage() {
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white">
+                    <div className="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center text-white">
                       <BrainCircuit className="w-8 h-8" />
                     </div>
                     <div>
@@ -171,7 +171,7 @@ export function AIModelsPage() {
                   <Button 
                     disabled={isRetraining === model.id}
                     onClick={() => handleRetrain(model.id)}
-                    className="bg-slate-900 hover:bg-primary font-bold rounded-xl gap-2 min-w-[160px]"
+                    className="bg-secondary hover:bg-primary font-bold rounded-xl gap-2 min-w-[160px]"
                   >
                     {isRetraining === model.id ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
@@ -213,7 +213,7 @@ export function AIModelsPage() {
         {/* Training Logs / History */}
         <div className="space-y-6">
           <h3 className="text-sm font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Журнал событий ИИ</h3>
-          <Card className="border-none shadow-xl bg-slate-900 text-white">
+          <Card className="border-none shadow-xl bg-secondary text-white">
             <CardHeader className="border-b border-slate-800 pb-4">
               <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-primary-foreground" />

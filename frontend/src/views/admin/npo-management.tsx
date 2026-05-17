@@ -77,7 +77,7 @@ export function NPOManagementPage({ onActionComplete }: NPOManagementPageProps) 
         </div>
         <div className="flex gap-4">
           <div className="bg-white px-4 py-2 rounded-2xl shadow-sm border flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-blue-600" />
+            <ShieldCheck className="w-5 h-5 text-primary" />
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Верифицировано</p>
               <p className="text-sm font-black">{approvedNPOs.length}</p>
@@ -95,7 +95,7 @@ export function NPOManagementPage({ onActionComplete }: NPOManagementPageProps) 
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
           <p className="font-bold text-slate-400">Синхронизация реестра...</p>
         </div>
       ) : (
@@ -113,7 +113,7 @@ export function NPOManagementPage({ onActionComplete }: NPOManagementPageProps) 
                     <CardContent className="p-0 flex flex-col md:flex-row">
                       <div className="w-full md:w-1/3 bg-slate-50 p-8 border-r">
                         <div className="w-16 h-16 bg-white rounded-2xl shadow-md flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                          <Building2 className="w-8 h-8 text-blue-600" />
+                          <Building2 className="w-8 h-8 text-primary" />
                         </div>
                         <h4 className="text-xl font-black text-slate-900 mb-2">{npo.name}</h4>
                         <div className="space-y-2">
@@ -134,7 +134,7 @@ export function NPOManagementPage({ onActionComplete }: NPOManagementPageProps) 
                           </p>
                           <div className="flex flex-wrap gap-2 mb-6">
                             {npo.expertise.map(exp => (
-                              <Badge key={exp} variant="secondary" className="bg-blue-50 text-blue-700 border-blue-100 uppercase text-[10px] font-bold">
+                              <Badge key={exp} variant="secondary" className="bg-accent/25 text-primary border-primary/20 uppercase text-[10px] font-bold">
                                 {exp}
                               </Badge>
                             ))}
@@ -150,7 +150,7 @@ export function NPOManagementPage({ onActionComplete }: NPOManagementPageProps) 
                           </Button>
                           <Button 
                             onClick={() => handleApprove(npo.id)}
-                            className="bg-slate-900 hover:bg-emerald-600 transition-all font-bold px-8 rounded-xl shadow-lg"
+                            className="bg-secondary hover:bg-emerald-600 transition-all font-bold px-8 rounded-xl shadow-lg"
                           >
                             Подтвердить статус
                           </Button>
@@ -171,8 +171,8 @@ export function NPOManagementPage({ onActionComplete }: NPOManagementPageProps) 
                 <Card key={npo.id} className="border-none shadow-lg bg-white hover:shadow-2xl transition-all">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-                        <Building2 className="w-6 h-6 text-blue-600" />
+                      <div className="w-12 h-12 bg-accent/25 rounded-xl flex items-center justify-center">
+                        <Building2 className="w-6 h-6 text-primary" />
                       </div>
                       <div className="flex items-center gap-1 text-emerald-500 font-black text-sm">
                         <Award className="w-4 h-4" />

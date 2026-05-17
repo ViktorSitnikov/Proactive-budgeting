@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, Integer, Enum, JSON, ForeignKey, DateTime
+from sqlalchemy import Column, String, Float, Integer, Enum, JSON, ForeignKey, DateTime, Text
 from sqlalchemy.ext.declarative import declarative_base
 from geoalchemy2 import Geometry
 import enum
@@ -76,6 +76,8 @@ class DBProject(Base):
     polygon = Column(JSON, nullable=True)  # кольцо [lng,lat][] до публикации; дублирует смысл geom_polygon после
     created_at = Column(DateTime(timezone=True), nullable=True)
     updated_at = Column(DateTime(timezone=True), nullable=True)
+    proposal_document_html = Column(Text, nullable=True)
+    proposal_document_path = Column(String, nullable=True)
 
 class DBNPO(Base):
     __tablename__ = "npos"

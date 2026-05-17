@@ -5,7 +5,7 @@ import random
 import os
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-from main import _build_point_wkt, _build_polygon_wkt
+from api.utils import build_point_wkt, build_polygon_wkt
 
 # Импортируем манифест загруженных ассетов, если он есть
 try:
@@ -175,15 +175,15 @@ def seed_data():
 
         projects.append(DBProject(
             id=pid,
-            title=f"{random.choice(project_titles)} '{pid}'",
+            title=f"{random.choice(project_titles)}",
             description=f"Масштабный проект по {random.choice(project_titles).lower()} в районе {random.choice(districts)}. Цель — улучшение качества жизни горожан.",
             budget=total_budget,
             image=get_random_asset("проект", f"https://images.unsplash.com/photo-{random.randint(1500000000000, 1600000000000)}?q=80&w=800"),
             location=f"{random.choice(districts)}, ул. {random.choice(last_names)}, {random.randint(1, 150)}",
             coordinates=coords,
             polygon=poly,
-            geom=_build_point_wkt(coords),
-            geom_polygon=_build_polygon_wkt(poly),
+            geom=build_point_wkt(coords),
+            geom_polygon=build_polygon_wkt(poly),
             status=status,
             type=random.choice(project_types),
             initiatorId=initiator.id,
@@ -240,8 +240,8 @@ def seed_data():
                 location="Не указано",
                 coordinates=coords,
                 polygon=poly,
-                geom=_build_point_wkt(coords),
-                geom_polygon=_build_polygon_wkt(poly),
+                geom=build_point_wkt(coords),
+                geom_polygon=build_polygon_wkt(poly),
                 status="DRAFT",
                 createdAt=ts.strftime("%Y-%m-%d"),
                 participants=[],

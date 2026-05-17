@@ -17,7 +17,9 @@ if not SQLALCHEMY_DATABASE_URL:
     raise ValueError("DATABASE_URL не задан")
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, pool_pre_ping=True
+    SQLALCHEMY_DATABASE_URL,
+    pool_pre_ping=True,
+    connect_args={"client_encoding": "utf8"},
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

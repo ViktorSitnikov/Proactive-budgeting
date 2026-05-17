@@ -50,7 +50,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
             <p>Загрузка деталей проекта...</p>
           </div>
         ) : details ? (
@@ -60,7 +60,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                 <Badge variant="outline" className="uppercase tracking-widest text-[10px] font-bold">
                   ID: {project.id}
                 </Badge>
-                <Badge className="bg-blue-500">{project.status}</Badge>
+                <Badge className="bg-primary">{project.status}</Badge>
               </div>
               <DialogTitle className="text-3xl font-black">{project.title}</DialogTitle>
               <div className="flex items-center gap-2 text-muted-foreground mt-2">
@@ -90,7 +90,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                     <div>
                       <div className="flex justify-between items-end mb-2">
                         <span className="text-[10px] font-bold uppercase text-slate-400">Прогресс</span>
-                        <span className="text-xl font-black text-blue-600">{details.progress}%</span>
+                        <span className="text-xl font-black text-primary">{details.progress}%</span>
                       </div>
                       <Progress value={details.progress} className="h-2" />
                     </div>
@@ -108,7 +108,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                   </CardContent>
                 </Card>
 
-                <Card className="bg-slate-900 text-white border-none shadow-xl">
+                <Card className="bg-secondary text-white border-none shadow-xl">
                   <CardContent className="p-6">
                     <span className="text-[10px] font-bold uppercase text-slate-400 block mb-2">Бюджет проекта</span>
                     <div className="space-y-3">
@@ -149,7 +149,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                       <img src={member.avatar} alt={member.name} className="w-12 h-12 rounded-full object-cover" />
                       <div>
                         <p className="font-bold text-slate-900">{member.name}</p>
-                        <p className="text-xs text-blue-600 font-medium">{member.role}</p>
+                        <p className="text-xs text-primary font-medium">{member.role}</p>
                       </div>
                     </div>
                   ))}
@@ -164,11 +164,11 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                       className="flex items-center justify-between p-4 rounded-xl border hover:bg-slate-50 transition-colors group"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                        <div className="w-10 h-10 rounded-lg bg-accent/25 flex items-center justify-center text-primary">
                           <FileText className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                          <p className="font-bold text-slate-900 group-hover:text-primary transition-colors">
                             {doc.name}
                           </p>
                           <p className="text-[10px] uppercase font-black text-slate-400 tracking-widest">
@@ -176,7 +176,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                           </p>
                         </div>
                       </div>
-                      <div className="w-8 h-8 rounded-full border flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white group-hover:border-blue-600 transition-all">
+                      <div className="w-8 h-8 rounded-full border flex items-center justify-center text-slate-400 group-hover:bg-primary group-hover:text-white group-hover:border-primary transition-all">
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
                     </a>
@@ -187,7 +187,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                 <div className="grid md:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <PieChart className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                      <PieChart className="w-8 h-8 text-primary mx-auto mb-2" />
                       <p className="text-2xl font-black text-slate-900">1.2к</p>
                       <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Поддержка жителей</p>
                     </CardContent>
@@ -201,7 +201,7 @@ export function ProjectDetailsModal({ project, open, onClose }: ProjectDetailsMo
                   </Card>
                   <Card>
                     <CardContent className="p-6 text-center">
-                      <CheckCircle2 className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                      <CheckCircle2 className="w-8 h-8 text-primary mx-auto mb-2" />
                       <p className="text-2xl font-black text-slate-900">85%</p>
                       <p className="text-[10px] font-bold uppercase text-slate-400 tracking-widest">Успешность KPI</p>
                     </CardContent>

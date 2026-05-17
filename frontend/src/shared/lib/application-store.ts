@@ -15,6 +15,8 @@ interface ApplicationData {
   resources: any[]
   type: string
   budget: number
+  documentHtml: string
+  documentDownloadUrl: string
 }
 
 interface ApplicationStore {
@@ -36,7 +38,9 @@ const initialData: ApplicationData = {
   currentStep: 1,
   resources: [],
   type: 'Благоустройство',
-  budget: 0
+  budget: 0,
+  documentHtml: '',
+  documentDownloadUrl: '',
 }
 
 export const useApplicationStore = create<ApplicationStore>((set) => ({
@@ -75,6 +79,8 @@ export const useApplicationStore = create<ApplicationStore>((set) => ({
         resources: draft.resources || [],
         type: draft.type || 'Благоустройство',
         budget: draft.budget || 0,
+        documentHtml: draft.proposalDocumentHtml || '',
+        documentDownloadUrl: draft.proposalDocumentPath || '',
       },
     })
   },

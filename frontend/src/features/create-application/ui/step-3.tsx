@@ -3,85 +3,89 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calculator, Coins, TrendingUp, ChevronLeft, ChevronRight, CheckCircle2, Loader2 } from "lucide-react"
+import {
+  Calculator,
+  Coins,
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
 import { projectsApi } from "@/src/shared/api/projects"
 import { ResourceTable, type Resource } from "@/src/features/resource-crud/ui/resource-table"
 import { useApplicationStore } from "@/src/shared/lib/application-store"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 interface InitiatorStep3Props {
   onBack: () => void
   onNext: () => void
+  smetaWarnings?: string[]
 }
 
-export function InitiatorStep3({ onBack, onNext }: InitiatorStep3Props) {
+export function InitiatorStep3({ onBack, onNext, smetaWarnings = [] }: InitiatorStep3Props) {
   const { data, updateData } = useApplicationStore()
   const [inflationRate, setInflationRate] = useState(8)
-  const [isLoading, setIsLoading] = useState(true)
+  const [resources, setResources] = useState<Resource[]>(
+    (data.resources as Resource[])?.length ? (data.resources as Resource[]) : []
+  )
 
   useEffect(() => {
-    const loadSettings = async () => {
-      try {
-        const settings = await projectsApi.getGlobalSettings()
-        setInflationRate(settings.inflationRate)
-      } catch (err) {
-        console.error("Failed to load settings:", err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    loadSettings()
+    projectsApi.getGlobalSettings().then((s) => setInflationRate(s.inflationRate)).catch(console.error)
   }, [])
 
-  const [resources, setResources] = useState<Resource[]>(
-    data.resources && data.resources.length > 0 
-      ? data.resources 
-      : [
-          { id: "res-1", name: "Игровое оборудование", quantity: 5, unit: "шт.", estimatedCost: 30000 },
-          { id: "res-2", name: "Резиновое покрытие", quantity: 100, unit: "м²", estimatedCost: 2500 },
-          { id: "res-3", name: "Лавочки", quantity: 8, unit: "шт.", estimatedCost: 10000 },
-          { id: "res-4", name: "Освещение", quantity: 12, unit: "шт.", estimatedCost: 10000 },
-        ]
-  )
+  useEffect(() => {
+    if (data.resources?.length) {
+      setResources(data.resources as Resource[])
+    }
+  }, [data.resources])
 
   const handleResourcesChange = (newResources: Resource[]) => {
     setResources(newResources)
-    const tb = newResources.reduce((sum, item) => sum + ((item.basePrice ?? item.estimatedCost ?? 0) * item.quantity), 0)
-    const ta = tb * (1 + inflationRate / 100)
-    updateData({ resources: newResources, budget: ta })
+    const totalBase = newResources.reduce(
+      (sum, item) => sum + (item.basePrice ?? item.estimatedCost ?? 0) * item.quantity,
+      0
+    )
+    const totalAdjusted = totalBase * (1 + inflationRate / 100)
+    updateData({ resources: newResources, budget: totalAdjusted })
   }
 
-  const totalBase = resources.reduce((sum, item) => sum + ((item.basePrice ?? item.estimatedCost ?? 0) * item.quantity), 0)
+  const totalBase = resources.reduce(
+    (sum, item) => sum + (item.basePrice ?? item.estimatedCost ?? 0) * item.quantity,
+    0
+  )
   const totalAdjusted = totalBase * (1 + inflationRate / 100)
   const userContribution = totalAdjusted * 0.05
   const subsidy = totalAdjusted - userContribution
-
-  useEffect(() => {
-    if (!isLoading && (!data.resources || data.resources.length === 0)) {
-      updateData({ resources, budget: totalAdjusted })
-    }
-  }, [isLoading, data.resources, resources, totalAdjusted, updateData])
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-        <p>Загрузка параметров сметы...</p>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold text-foreground mb-2">Финансы проекта</h2>
-        <p className="text-muted-foreground">AI сформировал черновик сметы на основе вашего описания, фото и похожих успешных проектов</p>
+        <p className="text-muted-foreground">
+          Смета сформирована автоматически. При необходимости скорректируйте позиции вручную.
+        </p>
       </div>
+
+      {smetaWarnings.length > 0 && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Предупреждения сервиса сметы</AlertTitle>
+          <AlertDescription>
+            <ul className="list-disc pl-4 text-sm space-y-1 mt-2">
+              {smetaWarnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="w-5 h-5 text-primary" />
-            Авто-смета (Черновик)
+            Авто-смета
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -132,15 +136,13 @@ export function InitiatorStep3({ onBack, onNext }: InitiatorStep3Props) {
 
       <Card className="border-border bg-muted/50">
         <CardContent className="pt-6">
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
-              <div>
-                <p className="font-semibold text-foreground">Ручная корректировка</p>
-                <p className="text-sm text-muted-foreground">
-                  Вы можете изменить количество или стоимость ресурсов, если считаете нужным
-                </p>
-              </div>
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-primary mt-0.5" />
+            <div>
+              <p className="font-semibold text-foreground">Ручная корректировка</p>
+              <p className="text-sm text-muted-foreground">
+                Вы можете изменить количество или стоимость ресурсов перед оформлением документа
+              </p>
             </div>
           </div>
         </CardContent>

@@ -22,6 +22,7 @@ import { AdminOverview } from "@/src/widgets/admin/overview"
 import { AppealsPage } from "./appeals"
 import { NPOManagementPage } from "./npo-management"
 import { AIModelsPage } from "./ai-models"
+import { BrandMark } from "@/src/shared/ui/brand-mark"
 
 type AdminPage = "overview" | "appeals" | "npos" | "models"
 
@@ -92,7 +93,7 @@ export function AdminHome({ user, onLogout }: AdminHomeProps) {
           width: isSidebarOpen ? 280 : (typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 80),
           x: isSidebarOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth < 768 ? -280 : 0)
         }}
-        className="bg-slate-900 text-white flex flex-col fixed h-full z-50 transition-all duration-300 md:relative"
+        className="bg-brand-navy text-primary-foreground flex flex-col fixed h-full z-50 transition-all duration-300 md:relative"
       >
         <div className="p-6 flex items-center justify-between border-b border-slate-800">
           <AnimatePresence>
@@ -103,8 +104,8 @@ export function AdminHome({ user, onLogout }: AdminHomeProps) {
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-black">A</div>
-                <span className="font-black uppercase tracking-tighter text-sm">Панель администратора</span>
+                <BrandMark showText={false} logoClassName="h-8 w-auto" />
+                <span className="font-black uppercase tracking-tighter text-sm">Проектория · Админ</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -128,7 +129,7 @@ export function AdminHome({ user, onLogout }: AdminHomeProps) {
               }}
               className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
                 currentPage === item.id 
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50" 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30" 
                   : "text-slate-400 hover:bg-slate-800 hover:text-white"
               }`}
             >
@@ -188,7 +189,7 @@ export function AdminHome({ user, onLogout }: AdminHomeProps) {
                 <p className="text-sm font-black leading-none">{user.name}</p>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Super Admin</p>
               </div>
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-base">
+              <div className="w-8 h-8 md:w-10 md:h-10 bg-secondary rounded-full flex items-center justify-center text-white font-bold text-xs md:text-base">
                 {user.name.charAt(0)}
               </div>
             </div>

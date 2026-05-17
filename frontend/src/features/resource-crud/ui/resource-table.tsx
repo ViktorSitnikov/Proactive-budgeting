@@ -136,7 +136,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h3 className="font-bold text-slate-800">Детализация ресурсов</h3>
-          <Button size="sm" onClick={() => setIsAdding(true)} disabled={isAdding} className="bg-blue-600 hover:bg-blue-700">
+          <Button size="sm" onClick={() => setIsAdding(true)} disabled={isAdding} className="bg-primary hover:bg-primary">
             <Plus className="h-4 w-4 mr-1" />
             Добавить
           </Button>
@@ -266,7 +266,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                                   <span className="font-bold text-slate-900 min-w-[70px]">{(s.price || 0).toLocaleString()} ₽</span>
                                   <span className="text-slate-600 truncate max-w-[120px]" title={s.name}>{s.name || "Не указан"}</span>
                                   {s.url ? (
-                                    <a href={s.url} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline truncate max-w-[100px]" title={s.url}>
+                                    <a href={s.url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate max-w-[100px]" title={s.url}>
                                       Ссылка
                                     </a>
                                   ) : (
@@ -281,7 +281,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
                         </td>
                         <td className="p-3 text-right">
                           <div className="flex justify-end gap-1">
-                            <Button size="icon" variant="ghost" onClick={() => handleEdit(resource)} className="h-8 w-8 text-slate-400 hover:text-blue-600">
+                            <Button size="icon" variant="ghost" onClick={() => handleEdit(resource)} className="h-8 w-8 text-slate-400 hover:text-primary">
                           <Pencil className="h-4 w-4" />
                         </Button>
                             <Button size="icon" variant="ghost" onClick={() => handleDelete(resource.id)} className="h-8 w-8 text-slate-400 hover:text-red-600">
@@ -296,7 +296,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
               })}
 
               {isAdding && (
-                <tr className="bg-blue-50/50">
+                <tr className="bg-accent/25/50">
                   <td className="p-2">
                     <Input
                       placeholder="Название"
@@ -391,7 +391,7 @@ export function ResourceTable({ resources, onResourcesChange }: ResourceTablePro
 
         <div className="flex justify-between items-center pt-4 border-t">
           <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">Итоговая стоимость</span>
-          <span className="text-xl font-black text-blue-600">
+          <span className="text-xl font-black text-primary">
             {resources.reduce((sum, r) => sum + (getResourcePrice(r) * r.quantity), 0).toLocaleString()} ₽
           </span>
         </div>

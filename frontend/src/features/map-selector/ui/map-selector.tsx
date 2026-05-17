@@ -102,12 +102,12 @@ export function MapSelector({ onLocationSelect, onPolygonSelect, initialLocation
           />
         </div>
 
-        {/* <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-          <span className="text-blue-600 font-bold uppercase text-[10px] block mb-1">Выбранная локация:</span>
+        {/* <div className="bg-accent/25/50 p-3 rounded-lg border border-primary/20">
+          <span className="text-primary font-bold uppercase text-[10px] block mb-1">Выбранная локация:</span>
           <p className="text-xs text-slate-700 leading-relaxed">{selectedLocation.address}</p>
           
           {polygonPoints.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-blue-200/50">
+            <div className="mt-3 pt-3 border-t border-primary/30/50">
               <span className="text-emerald-600 font-bold uppercase text-[10px] block mb-1">
                 Координаты полигона ({polygonPoints.length} точек):
               </span>

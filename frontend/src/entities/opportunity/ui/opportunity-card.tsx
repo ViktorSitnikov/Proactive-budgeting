@@ -23,7 +23,7 @@ export function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) 
               {opportunity.location}
             </CardDescription>
           </div>
-          <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+          <Badge variant="outline" className="bg-accent/25 text-primary border-primary/30">
             <Sparkles className="w-3 h-3 mr-1" />
             {opportunity.status === "applied" ? "Applied" : "Match"}
           </Badge>
@@ -34,9 +34,9 @@ export function OpportunityCard({ opportunity, onApply }: OpportunityCardProps) 
           <span className="text-sm text-muted-foreground">Budget</span>
           <span className="font-semibold text-emerald-600">{(opportunity.budget || 0).toLocaleString()} ₽</span>
         </div>
-        <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-          <p className="text-xs text-blue-700 font-medium mb-1">Why we recommended this</p>
-          <p className="text-xs text-blue-600">{opportunity.matchReason}</p>
+        <div className="p-3 bg-accent/25 rounded-lg border border-primary/20">
+          <p className="text-xs text-primary font-medium mb-1">Why we recommended this</p>
+          <p className="text-xs text-primary">{opportunity.matchReason}</p>
         </div>
         <div className="flex flex-wrap gap-1">
           {opportunity.tags.map((tag: string) => (

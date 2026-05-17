@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { fetchApi } from "@/src/shared/api/base"
 import type { User } from "@/src/shared/lib/mock-data"
+import { BrandMark } from "@/src/shared/ui/brand-mark"
 
 interface LoginFormProps {
-  onLogin: (user: User) => void
+  onLogin: () => void | Promise<void>
   onRegisterClick: () => void
 }
 
@@ -26,31 +27,29 @@ export function LoginForm({ onLogin, onRegisterClick }: LoginFormProps) {
     setIsLoading(true)
 
     try {
-      const data = await fetchApi<any>("/auth/login", {
+      const data = await fetchApi<{ access_token: string; user: User }>("/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       })
 
       localStorage.setItem("token", data.access_token)
-      onLogin(data.user)
-    } catch (err: any) {
-      setError(err.message || "Неверный email или пароль")
+      await onLogin()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Неверный email или пароль")
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-background to-emerald-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-3">
-          <div className="flex items-center justify-center mb-2">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center">
-              <span className="text-3xl font-bold text-white">B</span>
-            </div>
-          </div>
-          <CardTitle className="text-2xl text-center">Добро пожаловать в BudgetFlow</CardTitle>
-          <CardDescription className="text-center">Войдите, чтобы получить доступ к панели управления</CardDescription>
+    <div className="brand-page-gradient min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-border/80 shadow-xl">
+        <CardHeader className="space-y-4">
+          <BrandMark className="justify-center" compact />
+          <CardTitle className="text-2xl text-center">Вход в систему</CardTitle>
+          <CardDescription className="text-center">
+            Войдите, чтобы управлять инициативами и проектами
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,13 +75,20 @@ export function LoginForm({ onLogin, onRegisterClick }: LoginFormProps) {
                 required
               />
             </div>
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Загрузка..." : "Войти"}
+              {isLoading ? "Вход..." : "Войти"}
             </Button>
-            <Button type="button" variant="ghost" className="w-full" onClick={onRegisterClick}>
-              Нет аккаунта? Зарегистрироваться
-            </Button>
+            <div className="text-center text-sm">
+              <span className="text-muted-foreground">Нет аккаунта? </span>
+              <button
+                type="button"
+                onClick={onRegisterClick}
+                className="text-primary font-medium hover:underline"
+              >
+                Зарегистрироваться
+              </button>
+            </div>
           </form>
 
           <div className="mt-6 p-4 bg-muted rounded-lg space-y-2">
@@ -94,9 +100,9 @@ export function LoginForm({ onLogin, onRegisterClick }: LoginFormProps) {
               <p>
                 <strong>НКО Партнер:</strong> npo@example.com / password123
               </p>
-              <p>
+              {/* <p>
                 <strong>Администратор:</strong> admin@example.com / password123
-              </p>
+              </p> */}
             </div>
           </div>
         </CardContent>

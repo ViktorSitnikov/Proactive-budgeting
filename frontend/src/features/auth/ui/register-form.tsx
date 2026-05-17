@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { fetchApi } from "@/src/shared/api/base"
+import { BrandMark } from "@/src/shared/ui/brand-mark"
 
 interface RegisterFormProps {
-  onRegister: (data: any) => void
+  onRegister: () => void | Promise<void>
   onBackToLogin: () => void
 }
 
@@ -41,7 +42,7 @@ export function RegisterForm({ onRegister, onBackToLogin }: RegisterFormProps) {
       })
 
       localStorage.setItem("token", data.access_token)
-      onRegister(data.user)
+      await onRegister()
     } catch (err: any) {
       setError(err.message || "Ошибка при регистрации")
     } finally {
@@ -50,11 +51,12 @@ export function RegisterForm({ onRegister, onBackToLogin }: RegisterFormProps) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-background to-emerald-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-3">
-          <CardTitle className="text-2xl text-center">Регистрация в BudgetFlow</CardTitle>
-          <CardDescription className="text-center">Создайте аккаунт, чтобы начать работу</CardDescription>
+    <div className="brand-page-gradient min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-border/80 shadow-xl">
+        <CardHeader className="space-y-4">
+          <BrandMark className="justify-center" compact />
+          <CardTitle className="text-2xl text-center">Регистрация</CardTitle>
+          <CardDescription className="text-center">Создайте аккаунт в Проектории</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -114,7 +116,7 @@ export function RegisterForm({ onRegister, onBackToLogin }: RegisterFormProps) {
                 />
               </div>
             )}
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Загрузка..." : "Зарегистрироваться"}
             </Button>

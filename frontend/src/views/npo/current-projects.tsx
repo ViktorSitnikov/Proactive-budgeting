@@ -129,7 +129,7 @@ export function CurrentProjectsNPOPage({ user, onBack, onLogout }: CurrentProjec
 
                   <div className="flex gap-3 pt-2">
                     <Button 
-                      className="w-full bg-slate-900 hover:bg-primary gap-2 font-bold rounded-xl shadow-lg"
+                      className="w-full bg-secondary hover:bg-primary gap-2 font-bold rounded-xl shadow-lg"
                       onClick={(e: React.MouseEvent) => {
                         e.stopPropagation();
                         setIsEditMode(true);

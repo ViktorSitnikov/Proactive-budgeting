@@ -18,7 +18,17 @@ export interface Draft {
   location?: string;
   coordinates?: { lat: number; lng: number };
   polygon?: number[][];
+  proposalDocumentHtml?: string;
+  proposalDocumentPath?: string;
 }
+
+export interface DraftDocumentResponse {
+  previewHtml: string;
+  downloadUrl?: string | null;
+  warnings?: string[];
+}
+
+export type CheckIdeaResponse = Record<string, unknown>
 
 export const projectsApi = {
   // Пользователи
@@ -52,6 +62,11 @@ export const projectsApi = {
   },
   
   getProjectById: (id: string) => fetchApi<Project>(`/projects/${id}`),
+
+  checkIdea: (idea: string) => fetchApi<CheckIdeaResponse>('/projects/check-idea', {
+    method: 'POST',
+    body: JSON.stringify({ idea }),
+  }),
 
   createProject: (data: any) => fetchApi<Project>('/projects', {
     method: 'POST',
@@ -120,6 +135,30 @@ export const projectsApi = {
   deleteDraft: (id: string) => fetchApi<void>(`/projects/drafts/${id}`, {
     method: 'DELETE',
   }),
+
+  generateDraftDocument: (draftId: string) =>
+    fetchApi<DraftDocumentResponse>(`/projects/drafts/${draftId}/generate-document`, {
+      method: 'POST',
+      timeoutMs: 11 * 60 * 1000, // AI: 2–10 мин + запас
+    }),
+
+  getDraftDocument: (draftId: string) =>
+    fetchApi<DraftDocumentResponse>(`/projects/drafts/${draftId}/document`),
+
+  saveDraftDocument: (draftId: string, documentHtml: string) =>
+    fetchApi<DraftDocumentResponse>(`/projects/drafts/${draftId}/document`, {
+      method: 'PATCH',
+      body: JSON.stringify({ documentHtml }),
+    }),
+
+  uploadDraftDocumentDocx: (draftId: string, file: Blob) => {
+    const formData = new FormData()
+    formData.append('file', file, 'Заявка_Инициативное_Бюджетирование.docx')
+    return fetchApi<DraftDocumentResponse>(`/projects/drafts/${draftId}/document/upload`, {
+      method: 'POST',
+      body: formData,
+    })
+  },
 
   // НКО
   getNPOs: () => fetchApi<NPO[]>('/npos'),

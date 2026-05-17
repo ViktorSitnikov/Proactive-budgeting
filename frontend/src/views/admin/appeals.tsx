@@ -122,7 +122,7 @@ export function AppealsPage({ onActionComplete }: AppealsPageProps) {
 
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-24 bg-white rounded-[40px] border-2 border-dashed border-slate-200">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
           <p className="font-bold text-slate-400">Загрузка очереди...</p>
         </div>
       ) : projects.length > 0 ? (
@@ -132,7 +132,7 @@ export function AppealsPage({ onActionComplete }: AppealsPageProps) {
               <CardContent className="p-0 flex flex-col md:flex-row h-full">
                 <div className="w-full md:w-64 h-48 md:h-auto relative shrink-0">
                   <img src={getImageUrl(project.image)} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500" />
-                  <div className="absolute inset-0 bg-slate-900/20 group-hover:bg-transparent transition-all" />
+                  <div className="absolute inset-0 bg-secondary/20 group-hover:bg-transparent transition-all" />
                 </div>
                 
                 <div className="p-6 flex-1 flex flex-col justify-between">
@@ -146,7 +146,7 @@ export function AppealsPage({ onActionComplete }: AppealsPageProps) {
                         Подано: {formatBeautifulDate(project.createdAt)}
                       </span>
                     </div>
-                    <h3 className="text-xl font-black text-slate-900 group-hover:text-blue-600 transition-colors mb-2">
+                    <h3 className="text-xl font-black text-slate-900 group-hover:text-primary transition-colors mb-2">
                       {project.title}
                     </h3>
                     <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">
@@ -167,7 +167,7 @@ export function AppealsPage({ onActionComplete }: AppealsPageProps) {
                     </div>
                     <Button 
                       onClick={() => setSelectedProject(project)} 
-                      className="bg-slate-900 hover:bg-blue-600 rounded-full px-6 font-bold text-xs"
+                      className="bg-secondary hover:bg-primary rounded-full px-6 font-bold text-xs"
                     >
                       Изучить дело
                     </Button>

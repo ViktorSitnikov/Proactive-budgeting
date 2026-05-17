@@ -31,15 +31,13 @@ export function NotificationListener() {
     if (!userId) return
 
     const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:"
-    // Extracts host from BASE_URL or uses default
-    let host = "localhost:5000"
+    let host = window.location.host
     try {
       if (BASE_URL.startsWith("http")) {
-        const url = new URL(BASE_URL)
-        host = url.host
+        host = new URL(BASE_URL).host
       }
-    } catch (e) {
-      // ignore
+    } catch {
+      // оставляем window.location.host
     }
     
     const wsUrl = `${wsProtocol}//${host}/api/ws/notifications/${userId}`
@@ -121,7 +119,7 @@ export function NotificationListener() {
         >
           {unreadCount > 0 ? (
             <>
-              <BellDot className="w-5 h-5 text-blue-600" />
+              <BellDot className="w-5 h-5 text-primary" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
             </>
           ) : (
@@ -149,7 +147,7 @@ export function NotificationListener() {
                   key={notif.id} 
                   className={`p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 group relative ${notif.read ? 'opacity-70' : ''}`}
                 >
-                  <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                  <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1.5" />
                   <div className="flex-1 pr-6">
                     <p className="text-sm text-slate-800 font-medium leading-snug">{notif.message}</p>
                     <p className="text-[10px] text-slate-400 mt-1 capitalize">
@@ -160,7 +158,7 @@ export function NotificationListener() {
                         variant="link" 
                         size="sm" 
                         onClick={() => handleNavigate(notif.projectId)}
-                        className="h-auto p-0 mt-1.5 text-blue-600 text-xs font-bold gap-1"
+                        className="h-auto p-0 mt-1.5 text-primary text-xs font-bold gap-1"
                       >
                         Перейти
                         <ArrowRight className="w-3 h-3" />

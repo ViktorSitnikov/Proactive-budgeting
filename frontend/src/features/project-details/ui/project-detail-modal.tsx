@@ -102,7 +102,7 @@ export function ProjectDetailModal({
                     className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50"
                   >
                     <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-blue-600" />
+                      <FileText className="h-5 w-5 text-primary" />
                       <div>
                         <p className="text-sm font-medium">{doc.name}</p>
                         <p className="text-xs text-slate-500">{doc.type}</p>

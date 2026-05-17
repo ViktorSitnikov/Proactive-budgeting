@@ -525,7 +525,7 @@ ${resources.map(r => `- ${r.name || r.resource}: ${r.quantity} ${r.unit} x ${(r.
           {/* Sidebar */}
           <div className="space-y-6">
             {isNPOPartner && !isSuccess && (
-              <Card className="border-none shadow-xl bg-slate-900 text-white overflow-hidden">
+              <Card className="border-none shadow-xl bg-secondary text-white overflow-hidden">
                 <CardHeader className="bg-slate-800 border-b border-slate-700">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <LayoutDashboard className="w-5 h-5 text-primary" />

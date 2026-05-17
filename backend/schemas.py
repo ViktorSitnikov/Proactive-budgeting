@@ -115,6 +115,8 @@ class Draft(BaseModel):
     location: Optional[str] = None
     coordinates: Optional[Dict[str, Any]] = None
     polygon: Optional[List[List[float]]] = None
+    proposalDocumentHtml: Optional[str] = None
+    proposalDocumentPath: Optional[str] = None
 
     class Config:
         from_attributes = True

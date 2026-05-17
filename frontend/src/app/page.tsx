@@ -29,9 +29,15 @@ export default function HomePage() {
     }
   })
 
-  const handleLoginOrRegister = (user: User) => {
-    queryClient.setQueryData(['authUser'], user)
+  const handleLoginOrRegister = async () => {
     setIsRegistering(false)
+    try {
+      const fullUser = await fetchApi<User>("/auth/me")
+      queryClient.setQueryData(["authUser"], fullUser)
+    } catch (err) {
+      console.error("Failed to load user profile after auth", err)
+      await queryClient.invalidateQueries({ queryKey: ["authUser"] })
+    }
   }
 
   const handleLogout = () => {

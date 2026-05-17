@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { projectsApi, type Draft } from "../../shared/api/projects"
 
 import { NotificationListener } from "@/src/shared/ui/notification-listener"
+import { BrandMark } from "@/src/shared/ui/brand-mark"
 
 type InitiatorPage = "home" | "create" | "all-projects" | "profile" | "current-projects" | "applications-list" | "project-view"
 
@@ -154,14 +155,12 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-emerald-50 text-foreground">
+    <div className="brand-page-gradient min-h-screen text-foreground">
       {/* Header */}
       <header className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
         <div className="mx-auto px-4 md:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center justify-between w-full sm:w-auto">
-            <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight text-slate-900">
-              Городская<span className="text-blue-600">Инициатива</span>
-            </h1>
+            <BrandMark tagline="Личный кабинет инициатора" compact />
             <div className="flex sm:hidden items-center gap-2">
               <Button variant="ghost" size="icon" onClick={onLogout} className="text-slate-400">
                 <LogOut className="w-5 h-5" />
@@ -184,7 +183,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
             <div className="hidden sm:flex items-center gap-4 border-l pl-6">
               <div className="hidden md:block text-right">
                 <p className="text-sm font-bold text-slate-900">{user.name}</p>
-                <p className="text-[10px] uppercase font-black text-blue-600 tracking-tighter">Гражданин</p>
+                <p className="text-[10px] uppercase font-black text-primary tracking-tighter">Гражданин</p>
               </div>
               <NotificationListener userId={user.id} />
               <Button variant="ghost" size="icon" onClick={onLogout} className="text-slate-400 hover:text-destructive transition-colors">
@@ -217,10 +216,10 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
                     className="cursor-pointer border-none shadow-lg hover:shadow-2xl transition-all h-full bg-white group overflow-hidden"
                     onClick={() => setCurrentPage("applications-list")}
                   >
-                    <div className="h-2 w-full bg-blue-500" />
+                    <div className="h-2 w-full bg-primary" />
                     <CardHeader>
-                      <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-blue-600 transition-all duration-500 transform group-hover:rotate-12">
-                        <PlusCircle className="w-7 h-7 text-blue-600 group-hover:text-white" />
+                      <div className="w-14 h-14 bg-accent/40 rounded-2xl flex items-center justify-center mb-2 group-hover:bg-primary transition-all duration-500 transform group-hover:rotate-12">
+                        <PlusCircle className="w-7 h-7 text-primary group-hover:text-white" />
                       </div>
                       <CardTitle className="text-2xl font-black text-slate-900">Мои заявки</CardTitle>
                     </CardHeader>
@@ -307,7 +306,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
             >
               {isLoading ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50">
-                  <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+                  <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
                   <p className="text-slate-500 font-bold">Загружаем карту города...</p>
                 </div>
               ) : (
@@ -325,7 +324,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-[2px] flex items-center justify-center pointer-events-none z-10"
+                        className="absolute inset-0 bg-secondary/40 backdrop-blur-[2px] flex items-center justify-center pointer-events-none z-10"
                       >
                         <div className="text-center p-8 bg-white/10 rounded-full border border-white/20 backdrop-blur-xl">
                           <MapIcon className="w-12 h-12 text-white mx-auto mb-2 animate-pulse" />
@@ -343,7 +342,7 @@ export function InitiatorHome({ user, onLogout }: InitiatorHomeProps) {
                       className="bg-white/95 backdrop-blur-md p-6 rounded-3xl shadow-2xl border border-white/20 space-y-4"
                     >
                       <div className="flex items-center gap-4">
-                        <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
+                        <div className="w-3 h-3 rounded-full bg-primary animate-pulse" />
                         <span className="text-sm font-black text-slate-800 uppercase">Проектов в работе: {mapProjects.filter(p => p.status === ProjectStatuses.active).length}</span>
                       </div>
                       <div className="flex items-center gap-4">

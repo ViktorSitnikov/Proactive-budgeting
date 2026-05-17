@@ -70,7 +70,7 @@ export function CurrentProjectsPage({ user, onBack, onLogout }: CurrentProjectsP
       <div className="max-w-7xl mx-auto p-4 md:p-8">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
             <p className="font-medium">Загружаем ваши проекты...</p>
           </div>
         ) : (
@@ -92,7 +92,7 @@ export function CurrentProjectsPage({ user, onBack, onLogout }: CurrentProjectsP
                       {project.type || 'Благоустройство'}
                     </Badge>
                     {project.initiatorId === user.id && (
-                      <Badge className="absolute top-3 right-3 bg-blue-100 text-blue-700">Мой проект</Badge>
+                      <Badge className="absolute top-3 right-3 bg-accent/40 text-primary">Мой проект</Badge>
                     )}
                   </div>
                   <CardHeader>

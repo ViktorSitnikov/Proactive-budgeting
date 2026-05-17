@@ -6,3 +6,6 @@
 .pdf*
 .md*
 .docx*
+/images
+/static
+/backend/__pycache__

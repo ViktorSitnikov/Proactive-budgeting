@@ -426,7 +426,7 @@ export const ProjectMap: React.FC<ProjectMapProps> = ({
                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold border border-primary/20">${props.status}</span>
               </div>
               <button 
-                class="project-details-btn w-full mt-2 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-primary transition-colors cursor-pointer"
+                class="project-details-btn w-full mt-2 py-2 bg-secondary text-white text-xs font-bold rounded-lg hover:bg-primary transition-colors cursor-pointer"
                 data-project-id="${props.id}"
               >
                 Подробнее

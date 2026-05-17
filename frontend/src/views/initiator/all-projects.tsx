@@ -76,7 +76,7 @@ export function AllProjectsPage({ user, onBack, onLogout }: AllProjectsPageProps
 
   const getStatusColor = (status: ProjectStatuses) => {
     if (status === ProjectStatuses.success) return "bg-emerald-100 text-emerald-700 border-emerald-200"
-    if (status === ProjectStatuses.active) return "bg-blue-100 text-blue-700 border-blue-200"
+    if (status === ProjectStatuses.active) return "bg-accent/40 text-primary border-primary/30"
     if (status === ProjectStatuses.ai_scoring) return "bg-orange-100 text-orange-700 border-orange-200"
     return "bg-gray-100 text-gray-700 border-gray-200"
   }
@@ -165,7 +165,7 @@ export function AllProjectsPage({ user, onBack, onLogout }: AllProjectsPageProps
       <div className="max-w-7xl mx-auto px-4 md:px-8 pb-12">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+            <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
             <p className="font-medium">Загружаем список проектов...</p>
           </div>
         ) : (
@@ -179,7 +179,7 @@ export function AllProjectsPage({ user, onBack, onLogout }: AllProjectsPageProps
                   onClick={() => setSelectedProject(project)}
                 >
                   {project.initiatorId === user.id && (
-                    <div className="absolute top-0 left-0 z-10 bg-blue-600 text-white text-[8px] font-black uppercase px-2 py-1 rounded-br-lg shadow-md">
+                    <div className="absolute top-0 left-0 z-10 bg-primary text-white text-[8px] font-black uppercase px-2 py-1 rounded-br-lg shadow-md">
                       Вы автор
                     </div>
                   )}

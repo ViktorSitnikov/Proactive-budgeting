@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { Home, PlusCircle, FolderOpen, User, BarChart3, LogOut } from "lucide-react"
+import { BrandMark } from "@/src/shared/ui/brand-mark"
 
 interface SidebarNavProps {
   currentPage: string
@@ -32,15 +33,10 @@ export function SidebarNav({ currentPage, onNavigate, onLogout, role }: SidebarN
   return (
     <aside className="w-64 border-r bg-card h-screen flex flex-col">
       <div className="p-6 border-b">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center">
-            <span className="text-xl font-bold text-white">B</span>
-          </div>
-          <div>
-            <h2 className="font-semibold text-lg">BudgetFlow</h2>
-            <p className="text-xs text-muted-foreground">{role === "initiator" ? "Инициатор" : "НКО Партнер"}</p>
-          </div>
-        </div>
+        <BrandMark
+          compact
+          tagline={role === "initiator" ? "Инициатор" : "НКО-партнёр"}
+        />
       </div>
 
       <nav className="flex-1 p-4 space-y-2">
@@ -49,11 +45,11 @@ export function SidebarNav({ currentPage, onNavigate, onLogout, role }: SidebarN
           return (
             <Button
               key={link.id}
-              variant={currentPage === link.id ? "secondary" : "ghost"}
-              className={cn("w-full justify-start gap-3", currentPage === link.id && "bg-secondary")}
+              variant={currentPage === link.id ? "default" : "ghost"}
+              className={cn("w-full justify-start gap-3", currentPage === link.id && "bg-primary")}
               onClick={() => onNavigate(link.id)}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4" />
               {link.label}
             </Button>
           )
@@ -61,12 +57,8 @@ export function SidebarNav({ currentPage, onNavigate, onLogout, role }: SidebarN
       </nav>
 
       <div className="p-4 border-t">
-        <Button
-          variant="outline"
-          className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50 bg-transparent"
-          onClick={onLogout}
-        >
-          <LogOut className="w-5 h-5" />
+        <Button variant="outline" className="w-full gap-2 bg-transparent" onClick={onLogout}>
+          <LogOut className="w-4 h-4" />
           Выйти
         </Button>
       </div>

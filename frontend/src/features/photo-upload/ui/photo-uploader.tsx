@@ -65,7 +65,7 @@ export function PhotoUploader({ onUpload, initialUrls = [], maxFiles = 5 }: Phot
 
   return (
     <div className="space-y-4">
-      <div className={`border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-blue-400 transition-colors relative ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary/50 transition-colors relative ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
         <input
           type="file"
           accept="image/*"
@@ -75,7 +75,7 @@ export function PhotoUploader({ onUpload, initialUrls = [], maxFiles = 5 }: Phot
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         />
         {isUploading ? (
-          <Loader2 className="w-8 h-8 mx-auto mb-2 text-blue-500 animate-spin" />
+          <Loader2 className="w-8 h-8 mx-auto mb-2 text-primary animate-spin" />
         ) : (
         <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
         )}
