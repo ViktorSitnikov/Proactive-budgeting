@@ -28,7 +28,19 @@ export interface DraftDocumentResponse {
   warnings?: string[];
 }
 
-export type CheckIdeaResponse = Record<string, unknown>
+export type CheckIdeaResponse = {
+  is_adequate?: boolean
+  isAdequate?: boolean
+  adequate?: boolean
+  ok?: boolean
+  category?: string
+  project_category?: string
+  comment?: string
+  suggestion?: string
+  message?: string
+  detail?: unknown
+  [key: string]: unknown
+}
 
 export const projectsApi = {
   // Пользователи

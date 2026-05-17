@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Brain, Search, FileCheck, Calculator, Sparkles, AlertTriangle } from "lucide-react"
+import { Brain, Search, FileCheck, Calculator, Sparkles, AlertTriangle, Lightbulb } from "lucide-react"
 
-export type LoaderMode = "duplicates" | "resources" | "template" | "finalization"
+export type LoaderMode = "idea_check" | "duplicates" | "resources" | "template" | "finalization"
 
 interface Stage {
   id: string
@@ -13,6 +13,10 @@ interface Stage {
 }
 
 const MODES: Record<LoaderMode, Stage[]> = {
+  idea_check: [
+    { id: "read", text: "Читаю описание вашей инициативы...", icon: <Lightbulb className="w-8 h-8 text-primary" /> },
+    { id: "adequacy", text: "Проверяю адекватность и категорию проекта...", icon: <Brain className="w-8 h-8 text-secondary" /> },
+  ],
   duplicates: [
     { id: "duplicates", text: "Анализирую координаты и ищу пересечения...", icon: <Search className="w-8 h-8 text-primary" /> },
     { id: "duplicates2", text: "Проверяю похожие проекты в радиусе 500м...", icon: <Brain className="w-8 h-8 text-secondary" /> },

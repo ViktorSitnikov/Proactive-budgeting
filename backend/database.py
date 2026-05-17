@@ -69,6 +69,24 @@ def init_db():
         ),
     ]
     db.add_all(mock_users)
+    db.flush()
+
+    # Add Mock NPOs (до проектов)
+    mock_npos = [
+        DBNPO(
+            id="npo-1",
+            name="Фонд городской радости",
+            expertise=["Общественные пространства", "Развитие сообществ"],
+            rating=5.0,
+            avatar="/placeholder.svg?height=48&width=48",
+            activeProjects=3,
+            pendingRequests=5,
+            status="approved",
+            registrationDate="2023-01-10",
+        ),
+    ]
+    db.add_all(mock_npos)
+    db.flush()
 
     # Add Mock Projects
     mock_projects = [
@@ -118,22 +136,6 @@ def init_db():
         ),
     ]
     db.add_all(mock_projects)
-
-    # Add Mock NPOs
-    mock_npos = [
-        DBNPO(
-            id="npo-1",
-            name="Фонд городской радости",
-            expertise=["Общественные пространства", "Развитие сообществ"],
-            rating=5.0,
-            avatar="/placeholder.svg?height=48&width=48",
-            activeProjects=3,
-            pendingRequests=5,
-            status="approved",
-            registrationDate="2023-01-10",
-        ),
-    ]
-    db.add_all(mock_npos)
 
     # Add Mock Resources
     mock_resources = [
@@ -200,8 +202,13 @@ def init_db():
     )
     db.add(settings)
 
-    db.commit()
-    db.close()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    finally:
+        db.close()
 
 def get_db():
     db = SessionLocal()

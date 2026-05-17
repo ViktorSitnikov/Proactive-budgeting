@@ -36,7 +36,11 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    database.init_db()
+    if os.getenv("SKIP_INIT_DB", "").lower() not in ("1", "true", "yes"):
+        try:
+            database.init_db()
+        except Exception as exc:
+            print(f"init_db skipped/failed: {exc}")
 
 
 app.include_router(upload_router)

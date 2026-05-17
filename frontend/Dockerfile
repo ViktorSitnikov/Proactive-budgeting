@@ -8,8 +8,8 @@ COPY package.json package-lock.json* pnpm-lock.yaml* ./
 # Устанавливаем зависимости
 RUN \
   if [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  else npm install; \
+  elif [ -f package-lock.json ]; then npm install --legacy-peer-deps; \
+  else npm install --legacy-peer-deps; \
   fi
 
 # Этап 2: Сборка приложения

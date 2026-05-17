@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, LogOut, Save } from "lucide-react"
@@ -14,6 +14,9 @@ import { useApplicationStore } from "@/src/shared/lib/application-store"
 import { AiProcessingLoader, type LoaderMode } from "@/src/features/ai-simulation/ui/ai-processing-loader"
 import { useToast } from "@/hooks/use-toast"
 import { projectsApi } from "@/src/shared/api/projects"
+import type { AdequacyFeedback } from "@/src/features/create-application/lib/check-idea-integration"
+import { fetchCheckIdeaForStore } from "@/src/features/create-application/lib/fetch-check-idea-for-store"
+import { fetchSmetaForStore } from "@/src/features/create-application/lib/fetch-smeta-for-store"
 
 type InitiatorStep = 1 | 2 | 3 | 4 | 5 | 'ai_loading'
 
@@ -53,10 +56,12 @@ export function CreateApplicationPage({
   const [targetStep, setTargetStep] = useState<InitiatorStep>(
     typeof initialStep === "number" && initialStep >= 2 ? initialStep : 2
   )
-  const [loaderMode, setLoaderMode] = useState<LoaderMode>("duplicates")
+  const [loaderMode, setLoaderMode] = useState<LoaderMode>("idea_check")
+  const [smetaWarnings, setSmetaWarnings] = useState<string[]>([])
   const [isPublishing, setIsPublishing] = useState(false)
   const [createdProjectId, setCreatedProjectId] = useState<string | null>(null)
   const [isSavingDraft, setIsSavingDraft] = useState(false)
+  const [adequacyFeedback, setAdequacyFeedback] = useState<AdequacyFeedback | null>(null)
   const { data, updateData, resetData } = useApplicationStore()
 
   const readStore = () => useApplicationStore.getState().data
@@ -155,6 +160,21 @@ export function CreateApplicationPage({
     onBack()
   }
 
+  const handleStep1Next = () => {
+    const d = readStore()
+    const idea = (d.idea ?? "").trim()
+    if (!idea) {
+      toast({
+        variant: "destructive",
+        title: "Опишите идею",
+        description: "Нужен текст проекта для AI-проверки.",
+      })
+      return
+    }
+    setAdequacyFeedback(null)
+    handleNextWithLoader(2, "idea_check")
+  }
+
   const handleNextWithLoader = (target: InitiatorStep, mode: LoaderMode) => {
     if (typeof target === "number") {
       void saveCurrentDraft(target)
@@ -165,12 +185,101 @@ export function CreateApplicationPage({
   }
 
   const handleAiLoadingComplete = async () => {
-    if (targetStep === 2 && loaderMode === "duplicates") {
-      setCurrentStep(2)
-      toast({
-        title: "Готово",
-        description: "Переходим к проверке похожих проектов.",
-      })
+    const d = readStore()
+
+    if (targetStep === 2 && loaderMode === "idea_check") {
+      try {
+        const result = await fetchCheckIdeaForStore(d.idea)
+        if (result.category) {
+          updateData({ type: result.category })
+        }
+        if (!result.adequate) {
+          setAdequacyFeedback(result.feedback)
+          setCurrentStep(1)
+          toast({
+            variant: "destructive",
+            title: "Идея требует доработки",
+            description:
+              result.feedback.comment ||
+              result.feedback.suggestion ||
+              "Уточните описание проекта и попробуйте снова.",
+          })
+          return
+        }
+        if (result.feedback.comment || result.feedback.suggestion) {
+          setAdequacyFeedback(result.feedback)
+        }
+        setCurrentStep(2)
+        toast({
+          title: "Идея проверена",
+          description: "Переходим к поиску похожих проектов на карте.",
+        })
+      } catch (err) {
+        console.error("check-idea failed:", err)
+        toast({
+          variant: "destructive",
+          title: "Сервис проверки идеи недоступен",
+          description:
+            err instanceof Error
+              ? err.message
+              : "Проверьте AI_SERVICE_URL и SSH-туннель к микросервису на :8000.",
+        })
+        setCurrentStep(1)
+      }
+      return
+    }
+
+    if (targetStep === 3 && loaderMode === "resources") {
+      try {
+        const smeta = await fetchSmetaForStore(d)
+        updateData({ resources: smeta.resources, budget: smeta.resources.reduce(
+          (sum, r) => sum + (r.basePrice ?? r.estimatedCost ?? 0) * r.quantity,
+          0
+        ) })
+        setSmetaWarnings(smeta.warnings)
+        setCurrentStep(3)
+        toast({
+          title: "Смета готова",
+          description: smeta.usedFallback
+            ? "Использованы демо-позиции (сервис вернул пустой результат)."
+            : "Позиции сметы загружены.",
+        })
+      } catch (err) {
+        console.error("smeta failed:", err)
+        toast({
+          variant: "destructive",
+          title: "Не удалось построить смету",
+          description: err instanceof Error ? err.message : "Проверьте микросервис сметы.",
+        })
+        setCurrentStep(2)
+      }
+      return
+    }
+
+    if (targetStep === 4 && loaderMode === "template") {
+      try {
+        if (!d.id) {
+          await saveCurrentDraft(3)
+        }
+        const draftId = readStore().id
+        if (!draftId) {
+          throw new Error("Сначала сохраните черновик заявки.")
+        }
+        await projectsApi.generateDraftDocument(draftId)
+        setCurrentStep(4)
+        toast({
+          title: "Документ сформирован",
+          description: "Заявка готова к просмотру и редактированию.",
+        })
+      } catch (err) {
+        console.error("generate-docx failed:", err)
+        toast({
+          variant: "destructive",
+          title: "Не удалось сформировать документ",
+          description: err instanceof Error ? err.message : "Проверьте микросервис шаблонов.",
+        })
+        setCurrentStep(3)
+      }
       return
     }
 
@@ -283,7 +392,8 @@ export function CreateApplicationPage({
               exit={{ opacity: 0, x: -20 }}
             >
               <InitiatorStep1
-                onNext={() => handleNextWithLoader(2, "duplicates")}
+                onNext={handleStep1Next}
+                adequacyFeedback={adequacyFeedback}
               />
             </motion.div>
           )}
@@ -331,8 +441,9 @@ export function CreateApplicationPage({
               exit={{ opacity: 0, x: -20 }}
             >
               <InitiatorStep3 
-                onNext={() => handleNextWithLoader(4, 'template')}
-                onBack={() => setCurrentStep(2)} 
+                onNext={() => handleNextWithLoader(4, "template")}
+                onBack={() => setCurrentStep(2)}
+                smetaWarnings={smetaWarnings}
               />
             </motion.div>
           )}
